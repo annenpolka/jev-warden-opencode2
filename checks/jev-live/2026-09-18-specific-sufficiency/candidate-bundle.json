@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "warden.policy/0.1",
+  "id": "candidate-specific-definition-guidance-v1",
+  "parentId": "baseline-observe-only",
+  "status": "candidate",
+  "scope": {
+    "kind": "project",
+    "projectRef": "project-under-test"
+  },
+  "compatibility": {
+    "coreContract": "warden.core/0.1",
+    "requiredCapabilities": [
+      "source.read",
+      "context.guidance"
+    ]
+  },
+  "selectors": [
+    {
+      "id": "registered-definition-selector",
+      "options": {
+        "followReferencedConstants": true,
+        "maxFiles": 6
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "specific-sufficiency.expected-calls-definition",
+      "type": "noul",
+      "instructions": "Do `test_code` and `definitions` state the actual value that EXPECTED_CALLS has, directly rather than only by the constant name?",
+      "criteria": {
+        "true": "The material contains the definition of EXPECTED_CALLS together with its value",
+        "false": "The definition or its value is absent, or only the name is shown"
+      },
+      "inputs": [
+        "test_code",
+        "definitions"
+      ],
+      "role": "specific-evidence-sufficiency"
+    }
+  ],
+  "guidance": {
+    "kind": "definition-needed",
+    "delivery": "advisory",
+    "maxItems": 2,
+    "repeatOnlyOnNewEvidence": true
+  },
+  "promotion": {
+    "evaluationPolicyRef": "fixed-evaluation-policy-1",
+    "reportRefs": []
+  },
+  "notes": "Deterministic template candidate. Data only; no executable content."
+}

@@ -10,8 +10,10 @@ import { Plugin } from "@opencode/plugin/effect"
 import { Effect, Schedule, Stream } from "effect"
 import { WardenRpc } from "@jev-warden/contracts"
 import { assertStatusSafe, correlationDigest } from "@jev-warden/core"
+import { createLiveJev, macOsKeychainReader } from "./jev-live.ts"
 import { parseOptions } from "./options.ts"
 import { registerHooks, probe } from "./hooks.ts"
+import { requestReview, ReviewLedger, type ReviewInput } from "./review.ts"
 import { PLUGIN_ID, PLUGIN_VERSION, SPOOL_LIMIT, STORAGE_KEY, WardenRuntime } from "./runtime.ts"
 
 function toJsonValue(value: unknown): unknown {
@@ -81,6 +83,19 @@ const plugin = Plugin.define({
 
       yield* registerHooks(ctx, { runtime, flushSpool })
 
+      // Live Jev is opt-in and only reachable through the explicit review RPC.
+      const reviewLedger = new ReviewLedger()
+      const transport = parsed.options.jev.enabled
+        ? createLiveJev({
+            endpoint: parsed.options.jev.endpoint,
+            model: parsed.options.jev.model,
+            timeoutMs: parsed.options.jev.timeoutMs,
+            maxRequests: parsed.options.jev.maxRequests,
+            maxStateBytes: 64 * 1024,
+            keyReader: macOsKeychainReader(),
+          })
+        : null
+
       // RPC registration failure degrades the adapter instead of breaking the
       // host. The typed error channel is absorbed here and reported in status.
       const registration = yield* ctx.rpc.register(WardenRpc, {
@@ -94,8 +109,26 @@ const plugin = Plugin.define({
           Effect.sync(() => ({
             cutSequence: runtime.currentSequence,
             itemCount: runtime.spoolSnapshot.length,
-            debug: toJsonValue(runtime.debugSummary()) as Record<string, unknown>,
+            debug: toJsonValue({ ...runtime.debugSummary(), reviewItems: reviewLedger.size }) as Record<string, unknown>,
           })),
+        "review.request": (input) =>
+          Effect.promise(async () => {
+            try {
+              return await requestReview({ runtime, transport, ledger: reviewLedger }, input as ReviewInput)
+            } catch {
+              runtime.increment("jevRejected")
+              return { status: "unavailable" as const, requestDigest: "", error: "handler_error" }
+            }
+          }),
+        "review.list": (input) =>
+          Effect.sync(() => {
+            const record = input as { sessionID?: string; limit?: number }
+            return {
+              items: toJsonValue(
+                reviewLedger.list(record.sessionID, typeof record.limit === "number" ? record.limit : 32),
+              ) as Record<string, unknown>[],
+            }
+          }),
       }).pipe(
         Effect.catchCause(() =>
           Effect.sync(() => {

@@ -30,6 +30,7 @@ const args = parseArgs(process.argv.slice(2))
 const outPath = args.out ? resolve(process.cwd(), args.out) : join(repoRoot, "checks/host-conformance.json")
 const keepScratch = args.keep === "true"
 const filter = args.filter ?? null
+const liveJevEnabled = process.env.JW_LIVE_JEV === "1" || args["live-jev"] === "true"
 
 const cases = []
 const startedAt = Date.now()
@@ -267,6 +268,11 @@ class Host {
   async pendingPermissions(sessionID) {
     const response = await this.api(`/api/permission/request?sessionID=${encodeURIComponent(sessionID)}`)
     return response.body?.data ?? []
+  }
+
+  async rpc(rpcID, method, input) {
+    const response = await this.api(`/api/rpc/${rpcID}/${method}`, { method: "POST", body: { input } })
+    return response.body?.output
   }
 
   async replyPermission(sessionID, requestID, decision) {
@@ -715,6 +721,136 @@ async function main() {
         evidenceRefs: [env.artifacts.probeLog],
       }
     })
+    return result
+  })
+
+  // ------------------------------------------------------------------ Jev review
+  const fixtureDir = join(repoRoot, "checks/jev-live/2026-09-18-specific-sufficiency")
+  const fixtureTestCode = readFileSync(join(fixtureDir, "test_code.txt"), "utf8")
+  const fixtureDefinitionsMissing = readFileSync(join(fixtureDir, "a-missing-definition/definitions.txt"), "utf8")
+  const fixtureDefinitionsPresent = readFileSync(join(fixtureDir, "b-with-definition/definitions.txt"), "utf8")
+  const probeID = "specific-sufficiency.expected-calls-definition"
+
+  await runCase("EXTRA-JEV-DISABLED", "jev", "review RPC is rejected when live Jev is disabled", async () => {
+    const result = await withHost({ probe: {}, warden: {} }, async (env) => {
+      const sessionID = await env.host.createSession("jev-disabled")
+      const output = await env.host.rpc("jev-warden", "review.request", {
+        sessionID,
+        probeID,
+        state: { test_code: fixtureTestCode, definitions: fixtureDefinitionsMissing },
+      })
+      assert(output?.status === "rejected", `expected rejected, got ${JSON.stringify(output)}`)
+      assert(output?.error === "jev_disabled", `unexpected error ${output?.error}`)
+      const status = await env.host.rpc("jev-warden", "status", {})
+      assert(status?.status?.flags?.jevUnavailable === true, "disabled Jev should be flagged unavailable")
+      return {
+        status: "PASSED",
+        detail: "live Jev stays off by default; the review RPC is rejected before any transport call",
+        evidenceRefs: [env.artifacts.config],
+      }
+    })
+    return result
+  })
+
+  await runCase("EXTRA-JEV-LIVE", "jev", "explicit review RPC runs live Jev, records answers, and enforces budget", async () => {
+    if (!liveJevEnabled) {
+      return {
+        status: "BLOCKED",
+        detail: "live Jev disabled for this run; set JW_LIVE_JEV=1 to execute (uses the OS credential store)",
+        evidenceRefs: [],
+      }
+    }
+    const result = await withHost(
+      { probe: {}, warden: { jev: { enabled: true, maxRequests: 2 } } },
+      async (env) => {
+        const sessionID = await env.host.createSession("jev-live")
+        const credentialOutput = await env.host.rpc("jev-warden", "review.request", {
+          sessionID,
+          probeID,
+          state: {
+            test_code: fixtureTestCode,
+            definitions: `api_key = "${"q".repeat(24)}"`,
+          },
+        })
+        assert(credentialOutput?.status === "rejected", "credential-shaped state was not rejected")
+        assert(
+          typeof credentialOutput?.error === "string" && credentialOutput.error.startsWith("credential_pattern:"),
+          `unexpected rejection: ${credentialOutput?.error}`,
+        )
+        assert(
+          !JSON.stringify(credentialOutput).includes("q".repeat(24)),
+          "the rejected value leaked into the RPC response",
+        )
+
+        const missing = await env.host.rpc("jev-warden", "review.request", {
+          sessionID,
+          probeID,
+          state: { test_code: fixtureTestCode, definitions: fixtureDefinitionsMissing },
+          stateRefs: ["fixture:test_code", "fixture:definitions-missing"],
+        })
+        assert(missing?.status === "completed", `first live review failed: ${JSON.stringify(missing)}`)
+        assert(missing?.answers?.expected_calls_value_visible?.type === "noul", "missing sufficiency answer")
+        const sufficiencyA = missing.answers.expected_calls_value_visible.noul
+        const claimA = missing.answers.expected_total_is_three?.noul
+
+        const present = await env.host.rpc("jev-warden", "review.request", {
+          sessionID,
+          probeID,
+          state: { test_code: fixtureTestCode, definitions: fixtureDefinitionsPresent },
+          stateRefs: ["fixture:test_code", "fixture:definitions-present"],
+        })
+        assert(present?.status === "completed", `second live review failed: ${JSON.stringify(present)}`)
+        const sufficiencyB = present.answers.expected_calls_value_visible.noul
+        const claimB = present.answers.expected_total_is_three?.noul
+
+        const overBudget = await env.host.rpc("jev-warden", "review.request", {
+          sessionID,
+          probeID,
+          state: { test_code: fixtureTestCode, definitions: fixtureDefinitionsMissing },
+        })
+        assert(overBudget?.status === "budget_exhausted", `budget was not enforced: ${JSON.stringify(overBudget)}`)
+
+        const listed = await env.host.rpc("jev-warden", "review.list", { sessionID })
+        assert(
+          Array.isArray(listed?.items) && listed.items.length === 4,
+          `review ledger did not record four items: ${JSON.stringify(listed)?.slice(0, 600)}`,
+        )
+
+        const status = await env.host.rpc("jev-warden", "status", {})
+        assert(status?.status?.counters?.jevObservations === 2, "jevObservations counter mismatch")
+        assert(status?.status?.counters?.jevRejected === 2, "jevRejected counter mismatch")
+
+        writeFileSync(
+          join(fixtureDir, "host-review-observations.json"),
+          JSON.stringify(
+            {
+              schemaVersion: "warden.jev-host-observations/0.1",
+              at: Date.now(),
+              host: "opencode 2.0.7",
+              transport: "plugin RPC review.request",
+              sessionID,
+              reviews: [
+                { arm: "credential-control", output: credentialOutput },
+                { arm: "definition-missing", output: missing, stateRefs: ["fixture:test_code", "fixture:definitions-missing"] },
+                { arm: "definition-present", output: present, stateRefs: ["fixture:test_code", "fixture:definitions-present"] },
+                { arm: "over-budget-control", output: overBudget },
+              ],
+              counters: status?.status?.counters ?? null,
+            },
+            null,
+            2,
+          ) + "\n",
+        )
+
+        return {
+          status: "PASSED",
+          detail:
+            `live review through the plugin: sufficiency ${sufficiencyA} -> ${sufficiencyB}, ` +
+            `claim ${claimA} -> ${claimB}; credential-shaped state rejected locally; budget enforced at 2`,
+          evidenceRefs: [env.artifacts.config, "checks/jev-live/2026-09-18-specific-sufficiency/"],
+        }
+      },
+    )
     return result
   })
 

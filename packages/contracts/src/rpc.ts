@@ -47,6 +47,49 @@ export const WardenRpc = Rpc.define({
         additionalProperties: true,
       },
     },
+    "review.request": {
+      input: {
+        type: "object",
+        properties: {
+          sessionID: { type: "string" },
+          probeID: { type: "string" },
+          state: { type: "object", additionalProperties: true },
+          stateRefs: { type: "array", items: { type: "string" } },
+        },
+        required: ["probeID", "state"],
+        additionalProperties: false,
+      },
+      output: {
+        type: "object",
+        properties: {
+          status: { type: "string" },
+          requestDigest: { type: "string" },
+          model: { type: "string" },
+          answers: { type: "object", additionalProperties: true },
+          error: { type: "string" },
+        },
+        required: ["status", "requestDigest"],
+        additionalProperties: false,
+      },
+    },
+    "review.list": {
+      input: {
+        type: "object",
+        properties: {
+          sessionID: { type: "string" },
+          limit: { type: "number" },
+        },
+        additionalProperties: false,
+      },
+      output: {
+        type: "object",
+        properties: {
+          items: { type: "array", items: { type: "object", additionalProperties: true } },
+        },
+        required: ["items"],
+        additionalProperties: false,
+      },
+    },
   },
   events: {
     changed: {

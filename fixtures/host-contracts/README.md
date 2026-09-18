@@ -6,13 +6,13 @@ These fixtures verify Warden's assumptions against the **installed** OpenCode ho
 
 - `mock-model-server.mjs` — a local OpenAI-compatible chat-completions server implementing streaming responses and scripted tool calls. It binds only to `127.0.0.1` and never contacts a provider.
 - `probe/` — a fixture plugin (Effect API) that registers the mock provider, logs hook ordering as JSONL, optionally rewrites a prompt draft or mutates tool input, registers a small RPC, and checks storage durability.
-- `run-host-conformance.mjs` — starts the installed host against a scratch project, waits for the location to boot, reloads, activates the plugins, drives sessions, and asserts observable behavior.
+- `run-host-conformance.mjs` — starts the installed host against a scratch project, waits for the location to boot, reloads, activates the plugins, drives sessions, asserts observable behavior, and (when live Jev is enabled) exercises the `review.request` RPC against synthetic fixture state.
 - `collect-host-baseline.mjs` — records installed versions, digests, package-lock integrity, and the contract statements the conformance run produced.
 
 ## Safety
 
-- No external network calls: the only model endpoint is the local mock.
-- No API spend: no provider credential is used.
+- OpenCode provider calls: none. The only model endpoint is the local mock on `127.0.0.1`.
+- Live Jev: opt-in only (`JW_LIVE_JEV=1` or `npm run conformance:live`). It sends the synthetic `test_code` / `definitions` fixture state to TypeSafe through the plugin's `review.request` RPC; no user, session or repository content is sent. Two requests per live run.
 - Scratch projects live in the OS temp directory and are deleted unless `--keep true` is passed.
 - Sessions created in the installed host are deleted at the end of each scenario.
 - The harness changes nothing in the user's global OpenCode config.

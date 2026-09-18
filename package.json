@@ -11,6 +11,7 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "conformance": "node fixtures/host-contracts/run-host-conformance.mjs --out checks/host-conformance-2.0.7.json",
+    "conformance:live": "JW_LIVE_JEV=1 node fixtures/host-contracts/run-host-conformance.mjs --out checks/host-conformance-2.0.7.json",
     "doctor": "node packages/doctor/src/main.ts"
   },
   "devDependencies": {

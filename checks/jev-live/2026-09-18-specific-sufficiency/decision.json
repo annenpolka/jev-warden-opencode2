@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "warden.promotion-decision/0.1",
+  "candidateId": "candidate-specific-definition-guidance-v1",
+  "candidateDigest": "db9fc1050a89453948292b6464adc42bfaa89e12276dc445d124fd4d46b35379",
+  "stage": "replay_passed",
+  "decision": "hold",
+  "reason": "Replay separates the decision-time arm from the control arm, but work-level usefulness was not measured. Adoption requires a bounded work comparison, not a judgment replay.",
+  "criteria": {
+    "contractOk": true,
+    "replayOk": true,
+    "correctnessNonInferiorityEstablished": false,
+    "usefulnessImprovementEstablished": false
+  },
+  "nextActions": [
+    "collect more episodes with the same probe and independent controls",
+    "run a bounded work comparison (guidance vs observe-only) before any adoption",
+    "keep the candidate advisory-only; it cannot change permissions or prompt text"
+  ]
+}

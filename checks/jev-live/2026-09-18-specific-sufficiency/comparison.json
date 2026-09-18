@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "warden.replay-comparison/0.1",
+  "observationSource": "plugin RPC review.request (live)",
+  "observationFile": "/Users/annenpolka/ghq/github.com/annenpolka/jev-warden-opencode2/checks/jev-live/2026-09-18-specific-sufficiency/host-review-observations.json",
+  "threshold": 0.5,
+  "contract": {
+    "bundleValid": true,
+    "requiredCapabilities": [
+      "source.read",
+      "context.guidance"
+    ],
+    "hasExecutableContent": false
+  },
+  "replay": {
+    "rule": "sufficiency < 0.5 -> deliver_guidance",
+    "arms": [
+      {
+        "arm": "definition-missing",
+        "role": "decision-time",
+        "status": "completed",
+        "sufficiency": 0.04,
+        "candidateAction": "deliver_guidance",
+        "baselineAction": "observe_only"
+      },
+      {
+        "arm": "definition-present",
+        "role": "control",
+        "status": "completed",
+        "sufficiency": 0.87,
+        "candidateAction": "stay_silent",
+        "baselineAction": "observe_only"
+      }
+    ],
+    "firesOnDecisionTimeArm": true,
+    "silentOnControlArm": true
+  },
+  "criteria": {
+    "contractOk": true,
+    "replayOk": true,
+    "correctnessNonInferiorityEstablished": false,
+    "usefulnessImprovementEstablished": false
+  }
+}

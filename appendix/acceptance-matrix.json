@@ -465,7 +465,9 @@
     "conformance": "checks/host-conformance-2.0.7.json",
     "doctor": "checks/doctor.2.0.7.json",
     "baseline": "checks/host-baseline-2.0.7.json",
-    "modelCalls": "local OpenAI-compatible mock only (127.0.0.1); no external API spend"
+    "modelCalls": "local OpenAI-compatible mock only (127.0.0.1); no external API spend",
+    "jev": "live jev-latest (returned jev-1.13.0) through the explicit review RPC; synthetic fixtures only",
+    "budget": "Jev requests capped per plugin activation; the live conformance case enforces maxRequests=2"
   },
   "notes": [
     "PASSED entries cite checks/host-conformance-2.0.7.json and were executed against the installed host.",

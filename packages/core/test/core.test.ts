@@ -17,6 +17,7 @@ import {
   renderAdvisoryBlock,
   sanitize,
   sameScope,
+  scanForCredentials,
   scopeKey,
   toolAfterOutcome,
   validatePolicyBundle,
@@ -245,4 +246,20 @@ test("learning scheduling: only the authorized scheduler on main work", () => {
 
 test("canonical json sorts keys for stable digest input", () => {
   assert.equal(canonicalJson({ b: 1, a: { d: 2, c: 3 } }), '{"a":{"c":3,"d":2},"b":1}')
+})
+
+test("redaction: reports categories and locations, never the matched value", () => {
+  const findings = scanForCredentials({
+    state: {
+      definitions: "export const EXPECTED_CALLS = 3",
+      config: `api_key = "${"a".repeat(24)}"`,
+      nested: { pem: "-----BEGIN RSA PRIVATE KEY-----\nMIIE..." },
+    },
+  })
+  assert.deepEqual(findings, [
+    { category: "key_value_secret", location: "value.state.config" },
+    { category: "private_key_block", location: "value.state.nested.pem" },
+  ])
+  assert.equal(JSON.stringify(findings).includes("a".repeat(24)), false)
+  assert.deepEqual(scanForCredentials({ ok: "plain text" }), [])
 })

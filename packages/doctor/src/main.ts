@@ -109,9 +109,20 @@ function installedHost(args: Args): InstalledHost {
   }
 }
 
-function notRunChecks(): DoctorCheck[] {
+function notRunChecks(liveJevExecuted: boolean): DoctorCheck[] {
   return [
-    check("doctor.jev.live", "jev", "実Jev接続で観測・検証を行う", "NOT_RUN", [], "no live Jev credential was used"),
+    check(
+      "doctor.jev.live",
+      "jev",
+      "実Jev接続で観測・検証を行う",
+      liveJevExecuted ? "PASSED" : "NOT_RUN",
+      liveJevExecuted
+        ? ["checks/host-conformance-2.0.7.json#EXTRA-JEV-LIVE", "checks/jev-live/2026-09-18-specific-sufficiency/"]
+        : [],
+      liveJevExecuted
+        ? "explicit review RPC executed live Jev on synthetic fixtures; fault injection is still not run"
+        : "no live Jev credential was used",
+    ),
     check("doctor.lab.handshake", "storage", "Lab handshakeとoutbox再送を確認する", "NOT_RUN", []),
     check("doctor.tui.load", "tui", "実TUIでのplugin loadとslot表示を確認する", "NOT_RUN", []),
     check("doctor.executor.sandbox", "executor", "OS隔離executorでmutation検証を行う", "NOT_RUN", []),
@@ -128,12 +139,14 @@ async function main(): Promise<void> {
 
   const checks: DoctorCheck[] = []
   let notes: string[] = []
+  let liveJevExecuted = false
 
   if (args.conformance !== null && existsSync(args.conformance)) {
     const raw = readJson(args.conformance) as ConformanceResult | null
     if (raw !== null && raw.schemaVersion === "warden.host-conformance/0.1") {
       const observedAt = raw.finishedAt ?? Date.now()
       checks.push(...mergeConformance(raw.cases).map((entry) => ({ ...entry, observedAt })))
+      liveJevExecuted = raw.cases.some((entry) => entry.id === "EXTRA-JEV-LIVE" && entry.status === "PASSED")
       if (installed.serverVersion === null && typeof raw.host.opencodeVersionFromServer === "string") {
         installed = { ...installed, serverVersion: raw.host.opencodeVersionFromServer }
       }
@@ -148,7 +161,7 @@ async function main(): Promise<void> {
     notes.push("no conformance result was supplied; runtime checks were not executed")
   }
 
-  checks.push(...notRunChecks())
+  checks.push(...notRunChecks(liveJevExecuted))
   const report: DoctorReport = buildDoctorReport({ installed, checks, generatedAt: Date.now(), notes })
 
   const json = JSON.stringify(report, null, 2)

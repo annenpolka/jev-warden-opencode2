@@ -20,6 +20,16 @@ export interface WardenOptions {
   readonly probeLog: string | null
   /** Optional server id override for remote deployments. */
   readonly serverId: string | null
+  /** Live Jev evaluation through the explicit review RPC. Disabled by default. */
+  readonly jev: JevOptions
+}
+
+export interface JevOptions {
+  readonly enabled: boolean
+  readonly maxRequests: number
+  readonly timeoutMs: number
+  readonly endpoint: string
+  readonly model: string
 }
 
 export interface ParsedOptions {
@@ -37,6 +47,13 @@ export const DEFAULT_OPTIONS: WardenOptions = {
   denyActions: [],
   probeLog: null,
   serverId: null,
+  jev: {
+    enabled: false,
+    maxRequests: 8,
+    timeoutMs: 30_000,
+    endpoint: "https://api.typesafe.ai/v1/systemone",
+    model: "jev-latest",
+  },
 }
 
 export function parseOptions(raw: Readonly<Record<string, unknown>> | undefined): ParsedOptions {
@@ -74,6 +91,8 @@ export function parseOptions(raw: Readonly<Record<string, unknown>> | undefined)
     }
   }
 
+  const jev = parseJevOptions(record.jev, errors)
+
   const options: WardenOptions = {
     mode: mode ?? DEFAULT_OPTIONS.mode,
     policyActivation: "session-pinned",
@@ -84,8 +103,46 @@ export function parseOptions(raw: Readonly<Record<string, unknown>> | undefined)
     denyActions,
     probeLog,
     serverId,
+    jev,
   }
   return { options, errors }
+}
+
+function parseJevOptions(value: unknown, errors: string[]): JevOptions {
+  const defaults = DEFAULT_OPTIONS.jev
+  if (value === undefined || value === null) return defaults
+  if (typeof value !== "object" || Array.isArray(value)) {
+    errors.push("jev must be an object")
+    return defaults
+  }
+  const record = value as Record<string, unknown>
+  const enabled = typeof record.enabled === "boolean" ? record.enabled : defaults.enabled
+  if (record.enabled !== undefined && typeof record.enabled !== "boolean") errors.push("jev.enabled must be a boolean")
+  let maxRequests = defaults.maxRequests
+  if (record.maxRequests !== undefined) {
+    if (typeof record.maxRequests === "number" && Number.isInteger(record.maxRequests) && record.maxRequests >= 0) {
+      maxRequests = record.maxRequests
+    } else {
+      errors.push("jev.maxRequests must be a non-negative integer")
+    }
+  }
+  let timeoutMs = defaults.timeoutMs
+  if (record.timeoutMs !== undefined) {
+    if (typeof record.timeoutMs === "number" && Number.isFinite(record.timeoutMs) && record.timeoutMs > 0) {
+      timeoutMs = record.timeoutMs
+    } else {
+      errors.push("jev.timeoutMs must be a positive number")
+    }
+  }
+  const endpoint = typeof record.endpoint === "string" && record.endpoint.startsWith("https://")
+    ? record.endpoint
+    : defaults.endpoint
+  if (record.endpoint !== undefined && endpoint !== record.endpoint) {
+    errors.push("jev.endpoint must be an https URL")
+  }
+  const model = isNonBlank(record.model) ? record.model : defaults.model
+  if (record.model !== undefined && !isNonBlank(record.model)) errors.push("jev.model must be a nonempty string")
+  return { enabled, maxRequests, timeoutMs, endpoint, model }
 }
 
 function optionalString(value: unknown, label: string, errors: string[]): string | null {
