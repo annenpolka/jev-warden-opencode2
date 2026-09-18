@@ -1,0 +1,26 @@
+{
+  "desktop": {
+    "clientWidth": 1440,
+    "scrollWidth": 1440,
+    "height": 48288,
+    "headings": 32,
+    "tableRegions": 20,
+    "loadedImages": true,
+    "navLinks": 32,
+    "externalResources": [],
+    "errors": [],
+    "global_horizontal_overflow": false
+  },
+  "mobile": {
+    "clientWidth": 390,
+    "scrollWidth": 390,
+    "height": 67780,
+    "headings": 32,
+    "tableRegions": 20,
+    "loadedImages": true,
+    "navLinks": 32,
+    "externalResources": [],
+    "errors": [],
+    "global_horizontal_overflow": false
+  }
+}

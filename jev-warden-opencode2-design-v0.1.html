@@ -1,0 +1,1757 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="Jev WardenをOpenCode 2に実装するための調査・設計・実装計画。server plugin、TUI、RPC、証拠と自己改善。"><title>Jev Warden — OpenCode 2 実装設計書 OC2-0.1</title><style>
+:root{--ink:#16283c;--muted:#607085;--line:#d9e2eb;--paper:#fff;--back:#f2f5f8;--nav:#102b3b;--teal:#008579;--link:#006c86;--code:#eef3f7;--serif:"Noto Serif CJK JP",serif;--mono:"SFMono-Regular","Cascadia Code","Noto Sans Mono CJK JP",monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:38px}body{margin:0;background:var(--back);color:var(--ink);font:16px/1.95 -apple-system,BlinkMacSystemFont,"Noto Sans CJK JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px;overflow-wrap:anywhere}a:hover{color:var(--teal)}::selection{background:#bde8df}
+.sidebar{position:fixed;inset:0 auto 0 0;width:290px;background:var(--nav);color:#e0edf1;padding:34px 23px 24px;overflow-y:auto;z-index:5}
+.brand{letter-spacing:.17em;font-size:14px;font-weight:750;color:#fff;line-height:1.4}.edition{font-size:12px;color:#9fc4cf;margin-top:9px;margin-bottom:30px}.nav-title{font-size:11px;letter-spacing:.17em;font-weight:700;color:#7caaaf;margin:18px 0 10px}.sidebar ul,.mobile-nav ul{list-style:none;margin:0;padding:0}.sidebar li{margin:0 0 3px}.sidebar a{display:block;color:#d2e1e6;text-decoration:none;font-size:12px;line-height:1.7;padding:7px 8px;border-left:2px solid transparent;border-radius:0 4px 4px 0}.sidebar a:hover,.sidebar a.current{color:#fff;background:#193b4c;border-left-color:#47c8b6}.nav-foot{margin-top:30px;padding-top:15px;border-top:1px solid #35505e;color:#92b2bd;font-size:11px;line-height:1.8}
+.page{margin-left:290px;padding:38px 50px 72px;max-width:1500px}.toolbar{display:flex;justify-content:space-between;gap:20px;color:var(--muted);font-size:12px;margin:0 auto 24px;max-width:1020px}.toolbar a{text-decoration:none}.toolbar button{border:1px solid var(--line);background:#fff;border-radius:5px;padding:6px 12px;font:inherit;color:var(--ink);cursor:pointer}.document{max-width:1020px;margin:auto;background:var(--paper);border:1px solid var(--line);box-shadow:0 10px 36px #14283d08;border-radius:8px;overflow:hidden}
+.hero{padding:54px 58px 43px;background:linear-gradient(120deg,#113244,#174b55);color:#fff;position:relative}.eyebrow{color:#81dacb;letter-spacing:.2em;font-size:11px;font-weight:750}.hero h1{font-size:43px;line-height:1.2;letter-spacing:.02em;margin:20px 0 10px}.hero .sub{font-size:23px;font-weight:600;line-height:1.55;margin:0 0 23px}.hero .tagline{max-width:650px;color:#d6e9eb;line-height:1.9;font-size:14px;margin:0}.badges{display:flex;gap:9px;flex-wrap:wrap;margin-top:26px}.badge{display:inline-block;border:1px solid #76a6af;padding:4px 10px;border-radius:4px;font-size:11px;line-height:1.6}.badge.proposal{background:#dbf3e7;color:#143f37;border-color:#dbf3e7}.reading-key{padding:19px 58px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);background:#f7fafc}.reading-key strong{color:var(--ink)}
+.article{padding:26px 58px 62px;overflow-wrap:break-word}.article h2{font-size:25px;line-height:1.6;letter-spacing:.01em;margin:64px 0 24px;padding-top:25px;border-top:2px solid var(--ink);font-weight:750}.article h2:first-child{margin-top:24px}.article h3{font-size:18px;line-height:1.75;margin:32px 0 13px;color:#124354;font-weight:700}.article p{margin:15px 0}.article strong{font-weight:730}.article blockquote{margin:25px 0;background:#edf8f5;border-left:4px solid var(--teal);padding:10px 22px;color:#224c48;font-size:15px}.article blockquote p{margin:8px 0}.article ul,.article ol{padding-left:1.6em;margin:14px 0}.article li{margin:8px 0}.article hr{border:0;border-top:1px solid var(--line);margin:32px 0}.article :not(pre)>code{background:var(--code);border:1px solid #e1e8ee;border-radius:4px;padding:1px 5px;font-family:var(--mono);font-size:.87em;overflow-wrap:anywhere}.article pre{background:#122936;color:#e2eff2;padding:20px 22px;border-radius:6px;line-height:1.75;font-family:var(--mono);font-size:12px;overflow-x:auto;max-width:100%;margin:22px 0;tab-size:2}.article pre code{font:inherit;white-space:pre;overflow-wrap:normal}.table-wrap{margin:23px 0;max-width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:5px}.table-wrap:focus{outline:2px solid #87c4bf;outline-offset:3px}.article table{border-collapse:collapse;min-width:570px;width:100%;font-size:13px;line-height:1.85}.article th{background:#edf3f6;text-align:left;font-weight:700;color:#173849;border-bottom:1px solid var(--line);padding:11px 13px}.article td{padding:11px 13px;border-bottom:1px solid #e5ebef;vertical-align:top}.article tbody tr:nth-child(even){background:#fbfcfd}.article tr:last-child td{border-bottom:0}.article td:first-child{font-weight:550}.article a[id]{display:block;position:relative;top:-10px}.article h3[id]{scroll-margin-top:20px}.footer{max-width:1020px;margin:27px auto 0;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:16px}.mobile-nav{display:none}.progress{position:fixed;left:290px;right:0;top:0;height:3px;background:transparent;z-index:20}.progress span{display:block;height:100%;background:var(--teal);width:0}
+@media(min-width:1600px){.page{margin-left:max(290px,calc((100vw - 1230px)/2));}}
+@media(max-width:1100px){.sidebar{width:244px;padding:30px 16px}.page{margin-left:244px;padding:25px 26px 60px}.hero{padding:42px 36px}.reading-key{padding:16px 36px}.article{padding:22px 36px 45px}.progress{left:244px}.hero h1{font-size:37px}.article h2{font-size:23px}}
+@media(max-width:780px){body{font-size:15px;line-height:1.95}.sidebar{display:none}.page{margin-left:0;padding:14px 12px 35px}.toolbar{font-size:11px;margin-bottom:13px;align-items:center}.toolbar .label{max-width:190px;line-height:1.6}.document{border-radius:6px}.hero{padding:32px 24px}.hero h1{font-size:33px;margin-top:16px}.hero .sub{font-size:20px;line-height:1.6}.hero .tagline{font-size:13px}.eyebrow{font-size:10px}.reading-key{padding:15px 24px;font-size:11px}.article{padding:16px 23px 36px}.article h2{font-size:21px;margin-top:45px;padding-top:20px}.article h3{font-size:17px;margin-top:27px}.article pre{font-size:11px;padding:17px 15px}.article blockquote{padding:9px 15px;font-size:14px}.article table{font-size:12px;min-width:550px}.mobile-nav{display:block;margin:18px 0;background:#fff;border:1px solid var(--line);border-radius:5px}.mobile-nav summary{font-size:13px;padding:11px 14px;cursor:pointer;color:#155364;font-weight:650}.mobile-nav nav{max-height:55vh;overflow:auto;padding:2px 14px 15px}.mobile-nav a{font-size:12px;text-decoration:none;display:block;padding:6px 0;line-height:1.75}.progress{left:0}.footer{display:block;padding:0 8px;line-height:1.8}.footer span{display:block}.badges{gap:7px}.badge{font-size:10px}}
+@media print{body{background:#fff;color:#111;font-size:10pt;line-height:1.6}.sidebar,.toolbar,.mobile-nav,.progress,.footer{display:none!important}.page{margin:0;padding:0;max-width:none}.document{border:0;box-shadow:none;border-radius:0;max-width:none}.hero{color:#102c3c;background:#fff!important;border-bottom:3px solid #008579;padding:0 0 20px}.hero h1{font-size:31pt}.hero .sub{font-size:19pt}.hero .tagline,.eyebrow{color:#285769}.badge,.badge.proposal{background:#fff;color:#284654;border-color:#8099a6}.reading-key{padding:12px 0;background:#fff}.article{padding:8px 0}.article h2{break-before:page;margin-top:0;font-size:18pt}.article h3{font-size:13pt;break-after:avoid}.article pre{background:#f3f5f7;color:#111;white-space:pre-wrap;overflow-wrap:anywhere;font-size:8pt}.article pre code{white-space:pre-wrap;overflow-wrap:anywhere}.table-wrap{overflow:visible;border-radius:0}.article table{min-width:0;font-size:8.5pt}.article tr{break-inside:avoid}.article blockquote{background:#f5faf8;break-inside:avoid}a{color:inherit;text-decoration:none}@page{size:A4;margin:18mm 17mm}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head>
+<body><div class="progress" aria-hidden="true"><span></span></div>
+<aside class="sidebar"><div class="brand">JEV WARDEN</div><div class="edition">OpenCode 2 implementation<br>OC2-0.1 · 2026-09-18</div><div class="nav-title">CONTENTS</div><nav aria-label="章の目次"><ul>
+<li><a href="#s00">0. 要旨・文書の位置付け</a></li>
+<li><a href="#s01">1. 事実：確認したAPIと、断定しない境界</a></li>
+<li><a href="#s02">2. 推測（示唆）：目的・非目標・固定境界</a></li>
+<li><a href="#s03">3. 全体構成と、local／remote配置</a></li>
+<li><a href="#s04">4. 共通CoreとPlatform Adapterの契約</a></li>
+<li><a href="#s05">5. Plugin lifecycle・Effect・起動と停止</a></li>
+<li><a href="#s06">6. Hook・eventの対応表と呼出順序</a></li>
+<li><a href="#s07">7. User prompt・Skill推薦・原文保持</a></li>
+<li><a href="#s08">8. モデル直前context・圧縮・補助request</a></li>
+<li><a href="#s09">9. 権限・操作・完了の扱い</a></li>
+<li><a href="#s10">10. 証拠・Receipt・Eventのデータモデル</a></li>
+<li><a href="#s11">11. Relation Checkerとテスト設計の観測</a></li>
+<li><a href="#s12">12. Jev transport・fan-out・先読み・予算</a></li>
+<li><a href="#s13">13. 意味検索・検証計画・次の観測</a></li>
+<li><a href="#s14">14. RPC：TUI・Labとの接続と認可</a></li>
+<li><a href="#s15">15. Storage・outbox・複数sessionの整合性</a></li>
+<li><a href="#s16">16. PolicyBundle・registry・reloadの安全な接続</a></li>
+<li><a href="#s17">17. TUI・remote client・人間への説明</a></li>
+<li><a href="#s18">18. Generation・worktree・隔離実験</a></li>
+<li><a href="#s19">19. 経験化・自己改善・能動的フィードバック</a></li>
+<li><a href="#s20">20. 評価・採用・監査と固定Kernel</a></li>
+<li><a href="#s21">21. 技術構成・設定・配布・互換性</a></li>
+<li><a href="#s22">22. 性能・費用・有用性の指標</a></li>
+<li><a href="#s23">23. 受入試験・障害注入・検証マトリクス</a></li>
+<li><a href="#s24">24. 実装ロードマップ：まず「育つ一本」を通す</a></li>
+<li><a href="#s25">25. 実装調整役への引継ぎ</a></li>
+<li><a href="#s26">26. 設計判断・未決事項・Claude Mods版との差分</a></li>
+<li><a href="#s27">27. 参照資料・確認記録</a></li>
+<li><a href="#appendix-a">付録A. 内部契約例と検査方法</a></li>
+<li><a href="#appendix-b">付録B. 設定・policy・doctorの例</a></li>
+<li><a href="#appendix-c">付録C. 障害時runbook</a></li>
+<li><a href="#appendix-d">付録D. 最初の一本の時系列</a></li>
+</ul></nav><div class="nav-foot">28 chapters · 4 appendices<br>Design proposal / not implemented<br>Source baseline: a2594ddefb65</div></aside>
+<div class="page"><div class="toolbar"><span class="label">RESEARCH / ARCHITECTURE / IMPLEMENTATION</span><span><a href="jev-warden-opencode2-design-v0.1.md">Markdown正本</a> &nbsp; <button type="button" onclick="window.print()">印刷</button></span></div>
+<details class="mobile-nav"><summary>目次を開く — 28章と付録</summary><nav aria-label="モバイル目次"><ul>
+<li><a href="#s00">0. 要旨・文書の位置付け</a></li>
+<li><a href="#s01">1. 事実：確認したAPIと、断定しない境界</a></li>
+<li><a href="#s02">2. 推測（示唆）：目的・非目標・固定境界</a></li>
+<li><a href="#s03">3. 全体構成と、local／remote配置</a></li>
+<li><a href="#s04">4. 共通CoreとPlatform Adapterの契約</a></li>
+<li><a href="#s05">5. Plugin lifecycle・Effect・起動と停止</a></li>
+<li><a href="#s06">6. Hook・eventの対応表と呼出順序</a></li>
+<li><a href="#s07">7. User prompt・Skill推薦・原文保持</a></li>
+<li><a href="#s08">8. モデル直前context・圧縮・補助request</a></li>
+<li><a href="#s09">9. 権限・操作・完了の扱い</a></li>
+<li><a href="#s10">10. 証拠・Receipt・Eventのデータモデル</a></li>
+<li><a href="#s11">11. Relation Checkerとテスト設計の観測</a></li>
+<li><a href="#s12">12. Jev transport・fan-out・先読み・予算</a></li>
+<li><a href="#s13">13. 意味検索・検証計画・次の観測</a></li>
+<li><a href="#s14">14. RPC：TUI・Labとの接続と認可</a></li>
+<li><a href="#s15">15. Storage・outbox・複数sessionの整合性</a></li>
+<li><a href="#s16">16. PolicyBundle・registry・reloadの安全な接続</a></li>
+<li><a href="#s17">17. TUI・remote client・人間への説明</a></li>
+<li><a href="#s18">18. Generation・worktree・隔離実験</a></li>
+<li><a href="#s19">19. 経験化・自己改善・能動的フィードバック</a></li>
+<li><a href="#s20">20. 評価・採用・監査と固定Kernel</a></li>
+<li><a href="#s21">21. 技術構成・設定・配布・互換性</a></li>
+<li><a href="#s22">22. 性能・費用・有用性の指標</a></li>
+<li><a href="#s23">23. 受入試験・障害注入・検証マトリクス</a></li>
+<li><a href="#s24">24. 実装ロードマップ：まず「育つ一本」を通す</a></li>
+<li><a href="#s25">25. 実装調整役への引継ぎ</a></li>
+<li><a href="#s26">26. 設計判断・未決事項・Claude Mods版との差分</a></li>
+<li><a href="#s27">27. 参照資料・確認記録</a></li>
+<li><a href="#appendix-a">付録A. 内部契約例と検査方法</a></li>
+<li><a href="#appendix-b">付録B. 設定・policy・doctorの例</a></li>
+<li><a href="#appendix-c">付録C. 障害時runbook</a></li>
+<li><a href="#appendix-d">付録D. 最初の一本の時系列</a></li>
+</ul></nav></details>
+<main class="document"><header class="hero"><div class="eyebrow">SELF-IMPROVING DEVELOPMENT CONTROL</div><h1>Jev Warden</h1><p class="sub">OpenCode 2 実装設計書</p><p class="tagline">大量の意味観測を、原文・探索・検証・自動改善へつなぐ。<br>Server Plugin × Pure Core × TUI × Warden Lab</p><div class="badges"><span class="badge">OC2-0.1</span><span class="badge">2026-09-18</span><span class="badge proposal">設計提案 / 未実装</span><span class="badge">統合設計v0.2を継承</span></div></header>
+<div class="reading-key"><strong>区分：</strong>第1章は確認済みの外部事実と限界。第2章以降は設計案。実機試験・実Jev評価は未実施。</div>
+<article class="article">
+
+<p><strong>OC2-0.1 · 2026-09-18 · 設計提案 / 未実装</strong></p>
+<p>大量の意味観測を、原文・探索・検証・自動改善へつなぐ。</p>
+<blockquote>
+<p><strong>実装担当へ：</strong> この資料の内部型とpolicy例は提案であり、OpenCode Pluginの動作済み実装ではない。公開APIの形状は固定ソースで確認した範囲だけを使い、未確認の寿命・順序・認可をdoctorと適合試験で確定する。</p>
+</blockquote>
+
+
+<hr/>
+<p><a id="s00"></a></p>
+<h2>0. 要旨・文書の位置付け</h2>
+<p><strong>OpenCode 2を第一級の実装先とするJev Wardenの設計書である。</strong> 主モデルの作業を大量の意味観測で支え、その支え方を実際の成果と失敗から自動改善する。Claude Mods版の単なるAPI名置換ではなく、server/client分離、domain hooks、registry、Effect scope、RPCを前提に実装境界を引き直す。</p>
+<p>本書は「Jev Warden 統合設計書 v0.2」<a href="reference/jev-warden-complete-design-v0.2.md">W0</a>を継承する。共通の目的・証拠モデル・三つのループ・固定境界は維持し、OpenCode 2固有の契約は本書を優先する。Claude Mods版の入口と実行環境を上書きする文書ではない。</p>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>項目</th>
+<th>状態</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文書版</td>
+<td>OC2-0.1 / 2026-09-18</td>
+</tr>
+<tr>
+<td>継承元</td>
+<td>統合設計書v0.2。原本を変更せず、参照用コピーを同梱</td>
+</tr>
+<tr>
+<td>調査baseline</td>
+<td>anomalyco/opencode v2のcommit <code>a2594ddefb6557ecf7e7edb3e30ea50c71df8519</code></td>
+</tr>
+<tr>
+<td>ソース内package</td>
+<td><code>@opencode/plugin</code> / <code>2.0.7</code>。npm公開・手元のCLIとは別</td>
+</tr>
+<tr>
+<td>実施済み</td>
+<td>公開docs・固定ソースの調査、本書作成、付録の純粋内部契約例のoffline検査</td>
+</tr>
+<tr>
+<td>未実施</td>
+<td>OpenCodeのinstall／起動、Plugin load、実Jev・生成API、remote接続、worker稼働、policy採用</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s00-0">読み方</h3>
+<p>第1章は確認した外部事実と限界、第2章以降は<strong>推測（示唆）・設計提案</strong>である。後半の「必須」「禁止」はWardenの提案契約であり、OpenCodeに既に実装された保証ではない。コードを「公式API形状の説明」「擬似コード」「offline検査済みの独自契約例」に区別する。</p>
+<p>最短の読書経路は、第1〜6章で接続を把握し、第10〜16章で実行・通信・policy境界を確認し、第19〜25章で自己改善と実装を進める。APIの詳細と質問設計を読む場合は第7〜13章へ進む。</p>
+<h3 id="s00-1">守る中心命題</h3>
+<blockquote>
+<p>Jevを惜しまず使う。節約するのは、主モデルの再読、依存するネットワーク往復、人間への割り込みである。</p>
+<p>改善候補を作る主体と、その候補の成功条件・権限を決める主体を分離する。</p>
+</blockquote>
+<p>Jevは番人だけではない。関連資料、反証、不足する定義、検証義務、仮説、Skill、次の観測を整える。自己改善は反省文の追加ではなく、次の処理を変える差分と、その差分の評価である。</p>
+<p><a id="s01"></a></p>
+<h2>1. 事実：確認したAPIと、断定しない境界</h2>
+<h3 id="s01-1-1">1.1 固定したソース</h3>
+<p>本調査はv2 branchの特定commitを固定した。<a href="https://github.com/anomalyco/opencode/commit/a2594ddefb6557ecf7e7edb3e30ea50c71df8519" rel="noopener noreferrer" target="_blank">OC01</a> package manifestには<code>@opencode/plugin</code>、<code>2.0.7</code>とあり、Promise入口、<code>/effect</code>、<code>/tui</code>のexportsがある。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/package.json" rel="noopener noreferrer" target="_blank">OC02</a> これは<strong>そのcommit内の宣言</strong>であり、配布済みpackageやインストール済みOpenCodeの動作を検証した値ではない。</p>
+<p>Promise APIは<code>Plugin.define({ id, setup })</code>、Effect APIは<code>Plugin.define({ id, effect })</code>である。Promise setupはcleanupを返せ、Effect側の登録はplugin scopeへ結び付く。transformのeditor callbackは同期処理であり、非同期データの取得はその外で行う。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/README.md" rel="noopener noreferrer" target="_blank">OC03</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/README.md" rel="noopener noreferrer" target="_blank">OC04</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/plugin.ts" rel="noopener noreferrer" target="_blank">OC05</a></p>
+<h3 id="s01-1-2">1.2 Hookとregistryの重要な性質</h3>
+<p>固定READMEではhookは登録順に逐次実行され、後段は前段の変更を観測する。registryは変更後のread時に各transformを新しい値へ適用し、既に読まれた値は変更されない。通知や外部resourceの調整は、その値の再構築とは別である。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/README.md" rel="noopener noreferrer" target="_blank">OC04</a></p>
+<p>従って、<code>reload()</code>は全利用者のpolicyを一括・原子的に更新するAPIではない。どこまでが同じregistry instanceか、sessionとの対応、実行中callへの反映時点は、型と実機による適合試験を必要とする。</p>
+<h3 id="s01-1-3">1.3 直接確認した接点</h3>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>接点</th>
+<th>固定ソースで確認したこと</th>
+<th>それだけでは分からないこと</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session.hook("prompt")</code></td>
+<td>sessionID/messageID、mutable prompt、metadata、delivery</td>
+<td>元の入力の取得点、再実行、skill解決との正確な順序</td>
+</tr>
+<tr>
+<td><code>session.hook("context")</code></td>
+<td>model dispatch前のsystem/messages/options/tools</td>
+<td>他plugin後の最終入力、永続履歴に副作用がないことの実機確認</td>
+</tr>
+<tr>
+<td><code>session.hook("compaction")</code></td>
+<td>contextに加えてresultを指定できる型</td>
+<td>資料保持・tool call整合性・取消時の全動作</td>
+</tr>
+<tr>
+<td><code>tool.hook("execute.before")</code></td>
+<td>tool/inputの変更、session/agent/message/id</td>
+<td>permission前後の最終順序、すべての実行経路の網羅</td>
+</tr>
+<tr>
+<td><code>tool.hook("execute.after")</code></td>
+<td><code>completed</code>＋result / <code>error</code>＋error</td>
+<td>cancel・host crash時に必ず来ること</td>
+</tr>
+<tr>
+<td><code>permission.hook("evaluate")</code></td>
+<td>action/resources/source、effect/message</td>
+<td>config denyの短絡、後段plugin、direct APIを含む最終強制</td>
+</tr>
+<tr>
+<td><code>ctx.rpc.register</code></td>
+<td>typed registration、events.emit、Scope</td>
+<td>認証済み呼出主体、永続配送、停止後のendpoint存続</td>
+</tr>
+<tr>
+<td><code>ctx.worktree</code></td>
+<td>公開WorktreeApiとtransform/reload</td>
+<td>OS sandbox、未commit変更の自動複製</td>
+</tr>
+<tr>
+<td>TUI plugin</td>
+<td>別入口、setup/cleanup、data/slot/panel/storage</td>
+<td>全surfaceの表示と現在の導入設定</td>
+</tr>
+</tbody>
+</table></div>
+<p>参照：<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts" rel="noopener noreferrer" target="_blank">OC06</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/tool.ts" rel="noopener noreferrer" target="_blank">OC07</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/permission.ts" rel="noopener noreferrer" target="_blank">OC08</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/rpc.ts" rel="noopener noreferrer" target="_blank">OC09</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/worktree.ts" rel="noopener noreferrer" target="_blank">OC10</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/index.ts" rel="noopener noreferrer" target="_blank">OC11</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/plugin.ts" rel="noopener noreferrer" target="_blank">OC12</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/context.ts" rel="noopener noreferrer" target="_blank">OC13</a>。</p>
+<p>Toolの相関IDはこのソースでは<code>id: Tool.CallID</code>である。beforeのみ<code>Tool.Error</code>の型付き失敗を宣言し、afterの失敗型は<code>never</code>。afterのresult/errorをWardenが書き換えないという方針は、本書独自の制約である。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/tool.ts" rel="noopener noreferrer" target="_blank">OC07</a></p>
+<h3 id="s01-1-4">1.4 docsとソースの不一致を持ち込まない</h3>
+<p>同じV2 Plugins URLの取得結果に、<code>@opencode/plugin</code>を使う新しいdomain構成と、<code>@opencode-ai/plugin</code>／<code>ctx.catalog</code>を使う古い構成が混在した。<a href="https://opencode.ai/v2/docs/build/plugins" rel="noopener noreferrer" target="_blank">D01</a> さらに古い例の<code>tools.add(name, value)</code>と、固定ソースの完全なtool値を渡す<code>tools.add(value)</code>は異なる。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/README.md" rel="noopener noreferrer" target="_blank">OC03</a></p>
+<p>このため、以下を設計の実装手順とする。</p>
+<ol>
+<li>インストール済みCLIとそれに対応するpackage・公開型を採取する。</li>
+<li>本書の固定baselineとの差分を作り、adapterの適合試験を実施する。</li>
+<li>不一致は明示的に更新・縮退する。都合のよい例を新旧混在で貼らない。</li>
+</ol>
+<p><code>permission.rules</code>等、オンライン説明にあって固定domain型で確認できないメソッドを前提にしない。<code>SessionContext</code>にexecutionIDやmessageIDを勝手に追加してホストが返す値と見なさない。</p>
+<h3 id="s01-1-5">1.5 再取得できなかった資料</h3>
+<p>RPC docsは調査途中に取得でき、live-only通知、location、外部clientの説明を確認したが、後続の再取得ではcache missとなった。<a href="https://opencode.ai/v2/docs/build/plugins/rpc" rel="noopener noreferrer" target="_blank">D03</a> TUI専用docsの本文取得も失敗し、公開ソースの必要範囲で補った。<a href="https://opencode.ai/v2/docs/build/plugins/cli" rel="noopener noreferrer" target="_blank">D04</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/context.ts" rel="noopener noreferrer" target="_blank">OC13</a> Jev Cookbookの一部は既存v0.2から参照を継承しており、今回再実行・性能再現をしていない。<a href="reference/jev-warden-complete-design-v0.2.md">W0</a><a href="https://docs.typesafe.ai/cookbooks/skill_suggestion" rel="noopener noreferrer" target="_blank">J03</a><a href="https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery" rel="noopener noreferrer" target="_blank">J04</a></p>
+<p><strong>取得失敗を機能不存在の証拠にしない。同時に、未取得の詳細をAPI仕様として補完しない。</strong> sourceに存在すること、docsに説明があること、実際の環境で働くことは別の確認状態である。</p>
+<p><a id="s02"></a></p>
+<h2>2. 推測（示唆）：目的・非目標・固定境界</h2>
+<h3 id="s02-2-1">2.1 成功の定義</h3>
+<p>同等の依頼、初期snapshot、主モデル、host条件で、成果の正しさを損なわず、根拠のない仕様補完、古い検証結果の流用、無効な再試行、手戻り、人間の訂正負担を減らす。読むべき資料と反証へ早く到達し、その助け方が手動の振り返り指示なしで改善されることを目標とする。</p>
+<p>アラート数、Jev request数、テスト数、主モデルの自己評価を成功指標にしない。正しい指摘でも、既に予定された調査を繰り返すだけなら介入価値は低い。</p>
+<h3 id="s02-2-2">2.2 非目標</h3>
+<p>OpenCodeをforkして独自agent本体に置き換えること、全作業をJevで代行すること、モデル重みの自己学習、すべての終了を同期的に阻止することは初版の目的ではない。汎用グラフDB、巨大DSL、全面的なprovider routingも先に作らない。</p>
+<p>OpenCode PluginをOS sandboxと呼ばない。公開hook以外のprivate DB・内部サービスへ直接依存しない。利用できないhost能力を他の副作用でこっそり再現しない。</p>
+<h3 id="s02-2-3">2.3 自動変更しない境界</h3>
+<p>固定Kernelが、ユーザーの目的・仕様・明示禁止、送信先と資料範囲、実行能力、認可条件、予算上限、採用基準、監査アクセス、停止操作を所有する。ユーザーは別の明示操作で変更できるが、最適化器が自分の成績向上のために変更してはならない。</p>
+<pre><code class="language-text">依頼 ≠ agentの計画
+agentの報告 ≠ 観測された実行
+Jevの確率 ≠ 確定事実
+executionの成功 ≠ 要求の充足
+正しい判断 ≠ 有益な介入
+registry reload ≠ session policyの安全な切替
+worktree ≠ sandbox
+</code></pre>
+<h3 id="s02-2-4">2.4 自動化する範囲</h3>
+<p>承認済みのproject・宛先・予算の内側では、意味観測、資料探索、対照fixture生成、隔離実験、比較、advisory policyの採用・撤回を毎回の確認なしで行う。scope外の資料取得、公開、credential変更、実行能力の追加は別の承認経路に戻す。</p>
+<p>初版はpolicyをデータとして自動更新する。任意のJSやshellを生成してOpenCode server内へloadする自己改変にはしない。</p>
+<p><a id="s03"></a></p>
+<h2>3. 全体構成と、local／remote配置</h2>
+<pre><code class="language-text">ユーザー
+   │
+   ▼
+OpenCode TUI ─── Warden TUI plugin（表示・ユーザー操作）
+   │                    │ typed RPC + 再同期
+   │ OpenCode protocol   │
+   ▼                    ▼
+OpenCode server / location
+   ├─ 主モデルのsession
+   └─ Warden server plugin（Effect adapter）
+        ├─ event対応・session pin・online cache
+        ├─ Warden Core（純粋TypeScript）
+        ├─ Jev transportまたは同意済みbroker
+        └─ 認証されたLab接続
+                     │
+                     ▼
+Warden Lab（server側または承認済み別ホスト）
+   ├─ SQLite / evidence files / outbox / durable jobs
+   ├─ episode化 / candidate生成 / replay
+   └─ 隔離executor
+                     │
+                     ▼
+固定Kernel / Evaluator / Promoter
+   └─ 検証済みPolicyBundle → 新しいsessionへ
+</code></pre>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>部分</th>
+<th>所有する責務</th>
+<th>所有しない責務</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Server plugin</td>
+<td>公開hookの変換、即時調停、認可済みの資料取得、session内状態</td>
+<td>唯一の永続job queue、任意の自動昇格</td>
+</tr>
+<tr>
+<td>Core</td>
+<td>relation、入力選別、batch、状態遷移、介入・policyの純粋計算</td>
+<td>OpenCode/Effect/Nodeの直接import</td>
+</tr>
+<tr>
+<td>TUI plugin</td>
+<td>表示、選択、状態照会、明示的操作の送信</td>
+<td>Jev鍵、独自学習worker、権限の最終判定</td>
+</tr>
+<tr>
+<td>Lab</td>
+<td>長期記録、ジョブ、候補生成、実験、履歴再評価</td>
+<td>ユーザー意思の創作、固定評価の改変</td>
+</tr>
+<tr>
+<td>Kernel/Promoter</td>
+<td>grant・予算・固定基準・採用・失効</td>
+<td>自分で作った候補の無検証採用</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s03-3-1">3.1 一つのrepoで始める</h3>
+<p>独立可能な責務であって、すべてを別serviceへ分割する指示ではない。Coreはserver pluginにもLabにも組み込める。最初はOpenCode serverと一つのLab、必要な時だけ実験workerを基本にする。</p>
+<h3 id="s03-3-2">3.2 Remoteでは「どのマシンのパスか」を明示する</h3>
+<p>MacのTUIからWindows/LinuxのOpenCode serverへ接続する構成では、コード・tool・Jevへの送信判断はserver側のlocationに属する。TUIのcwdやkeychainを、serverの作業環境と同一視しない。</p>
+<p>Labをserver側に置けば原資料をTUIへ送らずに処理できる。Labを別ホストに置く場合は、その転送もdata policyの対象。OpenCode接続が許可されたことは、Jev・Labへの追加送信の許可ではない。</p>
+<h3 id="s03-3-3">3.3 障害時の独立性</h3>
+<p>TUIが落ちてもserverの主作業を止めない。Labが落ちた時はオンラインの助言を限定的に継続し、永続性の低下を表示する。OpenCode serverが落ちてもLabの比較・記録は残るが、hostを必要とするjobは待機へ戻す。固定の認可は各経路で維持する。</p>
+<p><a id="s04"></a></p>
+<h2>4. 共通CoreとPlatform Adapterの契約</h2>
+<p>CoreへOpenCodeの生eventを渡さず、最小のdomain eventへ正規化する。Claude Mods adapterと同じ概念を共有するが、能力を最小公倍数に潰さず、使えない能力は明示的に表現する。<a href="reference/jev-warden-complete-design-v0.2.md">W0</a></p>
+<h3 id="s04-4-1">4.1 識別子を分ける</h3>
+<pre><code class="language-text">server_id             Wardenが識別する接続先server
+server_epoch          再起動・世代変更の識別
+plugin_instance_id    登録されたplugin instance
+location_id           実際に実行するlocation
+project_id / worktree_id
+session_id / agent_id
+execution_id?         hostで観測できる時だけ
+message_id? / tool_call_id?
+policy_id / policy_digest
+snapshot_id
+</code></pre>
+<p><code>ctx.location</code>は起動instanceの場所として扱い、それだけで受信する全sessionの実行場所を決めない。公開session情報とeventのlocation情報を照合し、解決できなければ<code>scope_unresolved</code>として原資料送信や実行を保留する。パス文字列やrepository名だけで同一性を判定しない。</p>
+<p>同じsession IDが別serverにもあり得る前提でnamespace化する。parent sessionのgrantは子sessionへ無条件継承せず、委譲範囲との積を取る。</p>
+<h3 id="s04-4-2">4.2 Capability Profile</h3>
+<p>adapterは起動時に能力を<code>verified / declared_only / unavailable / unknown</code>として報告する。</p>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>能力</th>
+<th>縮退例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dispatch前context補助</td>
+<td>TUIと明示ツールだけで提供</td>
+</tr>
+<tr>
+<td>tool before/afterの対応</td>
+<td>result eventとsnapshot照合、capture gap表示</td>
+</tr>
+<tr>
+<td>session原文の取得</td>
+<td>自分のhook層で観測したdraftと出所を記録</td>
+</tr>
+<tr>
+<td>Skill選択の安全な追加</td>
+<td>追加せず候補を推薦</td>
+</tr>
+<tr>
+<td>RPC streaming</td>
+<td>polling＋snapshot/delta</td>
+</tr>
+<tr>
+<td>isolated worktree</td>
+<td>実験を提案だけに留めるか外部executor</td>
+</tr>
+<tr>
+<td>generation</td>
+<td>明示的に許可された外部reviewer adapter</td>
+</tr>
+<tr>
+<td>完了前の介入</td>
+<td>次回contextへの所見かbounded follow-up</td>
+</tr>
+</tbody>
+</table></div>
+<p>能力不足を「正常に実行済み」と報告しない。<code>host unavailable</code>と<code>Jev unavailable</code>も別の障害として残す。</p>
+<h3 id="s04-4-3">4.3 最小port</h3>
+<p>設計上のportは、<code>SourceReader</code>、<code>EventRecorder</code>、<code>JevEvaluator</code>、<code>GuidanceSink</code>、<code>SkillCatalog</code>、<code>CheckExecutor</code>、<code>GenerationPort</code>、<code>LabClient</code>、<code>Clock</code>、<code>GrantChecker</code>とする。存在するtool IDやsource IDから解決し、任意のshell文字列をCoreの判断値にしない。</p>
+<p>これらはWarden内部名であり、OpenCodeの実在API名ではない。付録の型はこの内部境界だけを検査する。</p>
+<p><a id="s05"></a></p>
+<h2>5. Plugin lifecycle・Effect・起動と停止</h2>
+<h3 id="s05-5-1">5.1 Effect版を第一候補にする</h3>
+<p>多数の独立した評価、event stream、取消、cleanupを扱うため、server adapterは<code>@opencode/plugin/effect</code>を第一候補とする。CoreはEffectへ依存させない。Promise版でも同じport契約を実装できる。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/README.md" rel="noopener noreferrer" target="_blank">OC03</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/README.md" rel="noopener noreferrer" target="_blank">OC04</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/plugin.ts" rel="noopener noreferrer" target="_blank">OC05</a></p>
+<p>次は固定ソースに沿った<strong>入口の形状説明</strong>であり、本書でhostへloadしたコードではない。</p>
+<pre><code class="language-ts">import { Plugin } from "@opencode/plugin/effect"
+import { Effect } from "effect"
+
+export default Plugin.define({
+  id: "jev-warden",
+  effect: Effect.fn(function* (ctx) {
+    yield* ctx.session.hook("context", () =&gt; Effect.void)
+  }),
+})
+</code></pre>
+<p>実装時は対象releaseのEffect／plugin型で再確認する。疑似module宣言を作って「本物のpluginが型検査に通った」と扱わない。</p>
+<h3 id="s05-5-2">5.2 起動順序</h3>
+<p>optionsのruntime validation、target APIのcapability確認、grant照合、Labとのhandshake、固定policyの取得、永続cursorの復旧を行う。最小の読み取りRPCと縮退statusはLab障害時にも説明可能にする。</p>
+<p>hookを登録し、stream consumerと先読み処理をplugin scopeにぶら下げる。setupで無限streamをawaitして起動を終わらなくしない。Scope管理は永続ジョブの代わりではない。</p>
+<h3 id="s05-5-3">5.3 責務別の停止</h3>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>処理</th>
+<th>plugin unload時</th>
+<th>server終了後</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>即時Jev・prefetch</td>
+<td>abort/interruptしてsupersededを記録</td>
+<td>継続しない</td>
+</tr>
+<tr>
+<td>hook登録・TUI subscription</td>
+<td>dispose/cleanup</td>
+<td>継続しない</td>
+</tr>
+<tr>
+<td>未送信の観測</td>
+<td>上限付きflush、未送信ならspool</td>
+<td>再起動後に回収</td>
+</tr>
+<tr>
+<td>候補比較・長期学習</td>
+<td>durable jobとしてLabへ渡す</td>
+<td>承認済みLabが継続</td>
+</tr>
+<tr>
+<td>副作用が不明な実験</td>
+<td><code>result_unknown</code>、再照合</td>
+<td>無条件再実行しない</td>
+</tr>
+</tbody>
+</table></div>
+<p>取消がproviderへのrequestや課金を取り消すとは限らない。<code>Promise.race</code>で待ちだけ終了して裏の通信を残す方式を、取消完了と呼ばない。transportの実際のabortとbudget accountingを別々に扱う。</p>
+<h3 id="s05-5-4">5.4 Hot reload</h3>
+<p>old generationの処理結果がnew generationへ届く場合を想定する。epoch、policy digest、snapshotを比較して古い結果の適用を防ぐ。UI memoryの共有があっても、controller leaseとhandler重複登録を防ぐ。scope cleanupをfixtureで確認する。</p>
+<p><a id="s06"></a></p>
+<h2>6. Hook・eventの対応表と呼出順序</h2>
+<h3 id="s06-6-1">6.1 Mapping</h3>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>OpenCode接点</th>
+<th>Warden内部event／役割</th>
+<th>基準</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session.hook("prompt")</code></td>
+<td>request draftの観測、Skill候補、先読み</td>
+<td><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts" rel="noopener noreferrer" target="_blank">OC06</a></td>
+</tr>
+<tr>
+<td><code>session.hook("context")</code></td>
+<td>dispatch前の証拠・反証・不足の調停</td>
+<td><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts" rel="noopener noreferrer" target="_blank">OC06</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/README.md" rel="noopener noreferrer" target="_blank">OC04</a></td>
+</tr>
+<tr>
+<td><code>session.hook("compaction")</code></td>
+<td>未解決事項と原文参照の保持</td>
+<td><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts" rel="noopener noreferrer" target="_blank">OC06</a></td>
+</tr>
+<tr>
+<td><code>session.hook("generate")</code> / <code>"title"</code></td>
+<td>補助requestとして区別</td>
+<td><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts" rel="noopener noreferrer" target="_blank">OC06</a></td>
+</tr>
+<tr>
+<td><code>tool.hook("execute.before")</code></td>
+<td>操作要求の記録、固定境界の確認</td>
+<td><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/tool.ts" rel="noopener noreferrer" target="_blank">OC07</a></td>
+</tr>
+<tr>
+<td><code>tool.hook("execute.after")</code></td>
+<td>completed/error、証拠更新</td>
+<td><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/tool.ts" rel="noopener noreferrer" target="_blank">OC07</a></td>
+</tr>
+<tr>
+<td><code>permission.hook("evaluate")</code></td>
+<td>元のeffectを弱めない再判定</td>
+<td><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/permission.ts" rel="noopener noreferrer" target="_blank">OC08</a></td>
+</tr>
+<tr>
+<td><code>ctx.event</code></td>
+<td>公開eventからsession状態を補足</td>
+<td><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/plugin.ts" rel="noopener noreferrer" target="_blank">OC05</a>。event unionは対象版で固定</td>
+</tr>
+<tr>
+<td><code>ctx.shell</code></td>
+<td>shell domainの観測・補助</td>
+<td><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/plugin.ts" rel="noopener noreferrer" target="_blank">OC05</a>。具体hook形状はdoctor待ち</td>
+</tr>
+<tr>
+<td>registry <code>transform</code> / <code>reload</code></td>
+<td>安定tool wrapper等の登録</td>
+<td><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/README.md" rel="noopener noreferrer" target="_blank">OC03</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/README.md" rel="noopener noreferrer" target="_blank">OC04</a></td>
+</tr>
+<tr>
+<td><code>ctx.rpc.register</code></td>
+<td>TUIと外部clientへの状態API</td>
+<td><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/rpc.ts" rel="noopener noreferrer" target="_blank">OC09</a></td>
+</tr>
+</tbody>
+</table></div>
+<p><code>session.execution.started/succeeded/failed/interrupted</code>は、前段の調査で候補となったevent名である。<strong>本書で読み切った固定型にそのpayloadは含まれないため、公開event unionとの照合項目として扱う。</strong> 名前を文字列で握り潰して「subscription成功」としない。</p>
+<h3 id="s06-6-2">6.2 一つの理想順序をホストの保証と混同しない</h3>
+<p>Wardenの論理順序は、依頼観測→context準備→操作の認可→実行→結果記録である。しかしOpenCode内部のpermissionとexecute.beforeの最終順序は実機で確認する。後段pluginがinputを変更できるので、Wardenが見たrequested inputと実行されたeffective inputを同じにしない。</p>
+<p>最終inputの出所が取れない場合は<code>effective_input_unknown</code>を残す。before段階で観測した引数だけから強いVerificationReceiptを発行しない。</p>
+<h3 id="s06-6-3">6.3 before / after / interruption</h3>
+<p>beforeは<code>id</code>、session、agent、messageで対応付ける。afterが成功でも、実行した要求・対象snapshotと一致することを別に確認する。エラー時は元のエラーを保ち、Wardenの記録エラーを代わりに投げない。</p>
+<pre><code class="language-text">requested → dispatched → completed
+                       ├→ error
+                       ├→ interrupted_outcome_unknown
+                       └→ capture_gap
+requested → denied_before_dispatch
+</code></pre>
+<p>cancelの専用after形状を捏造しない。afterが来ない場合は一定の期限とhost状態の照合でunknownへ閉じる。「eventがない」ことを「実行がない」に読み替えない。</p>
+<h3 id="s06-6-4">6.4 CodeMode・MCP・shellの網羅性</h3>
+<p>通常toolだけでなく、MCP、CodeMode、shell内部の複数操作、外部terminal、subagentを適合試験に含める。outer tool一件の観測しか得られない経路は、その粒度を明示する。</p>
+<p>shell文字列のregexを完全な副作用解析としない。CodeModeにtoolが登録されたことと、その中の実行がすべて同じhookを通ることは別の契約である。未観測経路はsnapshot比較とcollectorで補い、網羅性を誇張しない。</p>
+<p><a id="s07"></a></p>
+<h2>7. User prompt・Skill推薦・原文保持</h2>
+<h3 id="s07-7-1">7.1 promptを権限の創作に使わない</h3>
+<p><code>SessionPrompt</code>にはmutableなpromptとmetadataがある。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts" rel="noopener noreferrer" target="_blank">OC06</a> しかし変更できることを、元のユーザー依頼をWardenの説明へ置き換えてよい理由にしない。初版では本文は変更しない。</p>
+<p>可能なら公開履歴APIで元の入力を取得する。自分のhookまでに他pluginが変更している可能性を排除できなければ、<code>observed_prompt_draft</code>として層と時点を記録する。原文が取得できない時に<code>original_user_request</code>と名付けない。</p>
+<p>日常の補助はcontext hookへ送る。promptへのSkill ID追加も、永続入力に残るか、skill resolutionの前か、後段が変更するかを確認してから有効化する。</p>
+<h3 id="s07-7-2">7.2 Skill選択の二段階</h3>
+<pre><code class="language-text">現在の依頼 + 同意済みSkill catalog
+   ↓
+相対的な候補順位 / Skillを使う必要性
+   ↓
+候補の原文・適用条件
+   ↓
+要求を本当に実行できるか / 対象サービスは一致するか
+   ↓
+推薦またはnone
+</code></pre>
+<p>このパターンは既存設計で参照したSkill suggestionの考え方を継承する。<a href="reference/jev-warden-complete-design-v0.2.md">W0</a><a href="https://docs.typesafe.ai/cookbooks/skill_suggestion" rel="noopener noreferrer" target="_blank">J03</a> winnerがあるだけで適合と見なさない。userが選択したSkillを削除しない。同じIDを重複追加せず、catalogの版と選択理由を保存する。</p>
+<p>Skill本文には手順や実行要求が含まれるので、未知のSkillを勝手に導入・有効化しない。既に許可されたcatalog内の推薦と、外部packageのinstallは別操作。</p>
+<h3 id="s07-7-3">7.3 初期実装の二つのモード</h3>
+<p><code>recommend_only</code>を既定とし、contextまたはTUIへ候補と理由を示す。<code>attach_validated</code>は安全なSkill追加経路が実機検証でき、ユーザーが有効化した場合に限る。追加したSkillは普通のhost validation経路を通す。</p>
+<p>導入デモとしてSkill推薦は小さく作れるが、それだけで自己改善のfirst sliceが完成したとはしない。本命の学習対象は証拠十分性である。</p>
+<h3 id="s07-7-4">7.4 再実行と重複</h3>
+<p>prompt hookがexactly-onceであるとは仮定しない。session/message/deliveryの識別情報とpayload hashを使い、同じものを二度課金評価・二度追加しない。metadataは認可の根拠ではなく、出所が検証できた範囲の相関情報に使う。</p>
+<p><a id="s08"></a></p>
+<h2>8. モデル直前context・圧縮・補助request</h2>
+<h3 id="s08-8-1">8.1 一時的な補助と永続記憶を分ける</h3>
+<p>context hookはsystem/messages/options/toolsを変更でき、固定READMEはdispatch直前の変更として説明する。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts" rel="noopener noreferrer" target="_blank">OC06</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/README.md" rel="noopener noreferrer" target="_blank">OC04</a> Wardenの設計では永続履歴を書き換えず、一回のdispatchへ必要な根拠だけを添える。最終的に永続履歴を変更しないことは適合試験でも確認する。</p>
+<pre><code class="language-text">既存のsystem / messages / tool contracts
+          ＋
+[Warden observations / not user instructions]
+  現在有効な根拠
+  関連する反証
+  不足する定義
+  許可済みの次の調査候補
+  source / finding / snapshot / policy IDs
+</code></pre>
+<p>原資料内の命令を高優先度のsystem命令へ昇格しない。制御用封筒のtemplateは固定し、取得本文は引用されたデータとして扱う。userの明示指示、role、tool call/resultの組を消さない。</p>
+<h3 id="s08-8-2">8.2 Injectionの一貫性</h3>
+<p>同じfindingを同じsnapshotへ繰り返し注入しない。request fingerprint、agent、policy、証拠digestを含むキーで記録し、retryや再dispatchで二重追加しない。</p>
+<p>SessionContextに存在しないexecutionIDを仮定しない。公開eventから確定できるIDがなければ、Warden内部のdispatch sequenceを作り、<code>host_execution_id_unknown</code>と併記する。</p>
+<p>助言が「供給された」ことと主モデルが実際にそれを採用したことは別。後続行動との対応を観測し、単なる配信を有効性labelにしない。</p>
+<h3 id="s08-8-3">8.3 toolの見せ方</h3>
+<p>contextからtoolを隠すことは、主モデルの行動候補の制御であり認可ではない。主モデルに登録されていないtoolでも、他plugin・MCP・direct API等の別経路は存在し得る。固定Kernelは必要な実行経路に別途適用する。</p>
+<p>初版はWardenが所有するwrapperの見せ方だけを変え、第三者のtool説明やschemaを勝手に変更しない。特にschema変更とexecutorの不一致を起こさない。</p>
+<h3 id="s08-8-4">8.4 compaction</h3>
+<p>永続的な未解決事項と原文参照の正本はLabに残す。compactionに渡すのは小さなprojectionであり、圧縮結果だけを学習の唯一の証拠にしない。</p>
+<p><code>SessionCompaction.result</code>を与えるとモデルによる処理を置き換え得る型であるが、初版はresultを自作せず補助資料だけを追加する。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts" rel="noopener noreferrer" target="_blank">OC06</a> 圧縮中の取消、provider state、token会計、tool履歴との整合を確認するまで全面置換しない。</p>
+<h3 id="s08-8-5">8.5 primaryとauxiliary</h3>
+<p>固定型ではmodel/http requestが<code>primary / compaction / title / generate</code>を区別する。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts" rel="noopener noreferrer" target="_blank">OC06</a> タイトル生成や補助評価に通常の「作業完了」probeをかけない。補助生成がまたWarden生成を起動する再帰を防ぎ、予算を別勘定にする。</p>
+<p>HTTP/WSのbodyは原則触らない。streamを書き換える高度な機能は初版外とし、モデル設定やprovider endpointを自己学習bundleから変更できないようにする。</p>
+<p><a id="s09"></a></p>
+<h2>9. 権限・操作・完了の扱い</h2>
+<h3 id="s09-9-1">9.1 非弱化の原則</h3>
+<p>permission hookでは入ってきたeffectをまず記録する。Warden自身はそれを弱めない。</p>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>入力effect</th>
+<th>Wardenが採用してよい出力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>deny</td>
+<td>denyのみ</td>
+</tr>
+<tr>
+<td>ask</td>
+<td>ask、または固定禁止に基づくdeny</td>
+</tr>
+<tr>
+<td>allow</td>
+<td>allow、固定承認条件に基づくask、固定禁止に基づくdeny</td>
+</tr>
+<tr>
+<td>未知の値／契約不一致</td>
+<td>許可へ変換せずadapterを縮退し、固定方針に従う</td>
+</tr>
+</tbody>
+</table></div>
+<p>これはWardenの局所契約である。ホスト全体で最終denyが維持されるか、別pluginが後から書き換えられるかは別に検証する。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/permission.ts" rel="noopener noreferrer" target="_blank">OC08</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/README.md" rel="noopener noreferrer" target="_blank">OC04</a> 以前の調査で述べた「config denyではhookが呼ばれない」は今回の型だけでは確定できないため、受入試験へ移す。</p>
+<p><code>abstain</code>はevent.effectを変更しないこと。積極的にallowを返すことではない。Jevの高確率はask解除の理由にしない。<code>ctx.permission.reply</code>が型上存在することを、自動承認してよい根拠にしない。</p>
+<h3 id="s09-9-2">9.2 Kernelとadvisoryの分離</h3>
+<p>scope外の操作や明示禁止は決定的に扱う。off-task、plan mismatch、stub、仕様推測等のJev所見はまず助言へ回す。正しい指摘でも、実装途中・探索中の行動を自動停止しない。</p>
+<p>副作用のない資料参照を推すことと、DB reset・publish・mergeの実行は同じ扱いにしない。agentの「実行する予定」はユーザーの許可ではない。</p>
+<h3 id="s09-9-3">9.3 直接実行経路</h3>
+<p>pluginがshell/processやモデルAPIへ直接アクセスする場合、native tool permissionが全経路を覆うとは仮定しない。Wardenのbrokerは自身のsource read、Jev送信、check実行にもgrant・path・予算を適用する。入力で渡されたsessionIDだけでauthorityを決めない。</p>
+<p>他pluginから隔離されない同一server process内で、絶対的なtamper-proof境界を主張しない。強い隔離が必要な評価器・実験はOS境界へ置く。</p>
+<h3 id="s09-9-4">9.4 完了は二つに分ける</h3>
+<p>host executionの終端と、要求を満たしたという主張の確認は別のeventとする。成功したexecution、正常なmodel response、テストコマンドのexit 0だけでは、要求全体を満たしたとしない。</p>
+<p>初版には汎用の同期completion blockerを前提にしない。未検証事項はTUI・明示status・次回contextへ出す。自動follow-upを行う場合は別のopt-in能力とし、同じfinding/snapshotに新証拠なしで再起動しない。</p>
+<h3 id="s09-9-5">9.5 Follow-upの競合制御</h3>
+<p>userの新しい入力が優先される。終了照合と新promptの競合では、execution tokenの比較、単一controller lease、送信直前のidle確認で調整する。follow-upにWarden起源を付け、ユーザーが言っていない文をuserの意思として保存しない。</p>
+<p>公開<code>session.synthetic</code>等が存在しても、自動起動・delivery・取消の動作は実機確認する。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts" rel="noopener noreferrer" target="_blank">OC06</a> 対応しなければ、TUIのボタンまたは次回contextへ縮退する。</p>
+<p><a id="s10"></a></p>
+<h2>10. 証拠・Receipt・Eventのデータモデル</h2>
+<h3 id="s10-10-1">10.1 正本は一つ、投影は複数</h3>
+<p>長期のevent、証拠、episode、policyと採用記録はLabが所有する。server pluginはhot cacheと処理中の相関、TUIは表示projectionを持つ。host storageとLab DBを二重の正本にしない。</p>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>レコード</th>
+<th>主要fieldと責務</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EventEnvelope</td>
+<td>server/epoch/location/session/agent、host IDまたは内部sequence、origin、policy、snapshot、時刻</td>
+</tr>
+<tr>
+<td>EvidenceRef</td>
+<td>原文・結果の内容hash、scope、資料版、行/節、話者、取得時点、送信許可</td>
+</tr>
+<tr>
+<td>Claim</td>
+<td>原子的主張、抽出元、前提、必要な定義、採用決定か仮説か</td>
+</tr>
+<tr>
+<td>Observation</td>
+<td>実際のrequest/response参照、probe/input builderの版、返却モデル、raw確率、error、usage</td>
+</tr>
+<tr>
+<td>Finding</td>
+<td>調査項目、依存証拠、複数Observation、解決状態、更新履歴</td>
+</tr>
+<tr>
+<td>VerificationReceipt</td>
+<td>固定対象、実行コマンド/runner、環境、結果、検証範囲、出所</td>
+</tr>
+<tr>
+<td>Intervention</td>
+<td>対象session/snapshot/policy、助言、根拠、配信経路、重複排除、後続反応</td>
+</tr>
+<tr>
+<td>Episode</td>
+<td>当時の情報と後続ラベルを分離、dataset group、評価arm</td>
+</tr>
+<tr>
+<td>PolicyBundle</td>
+<td>親版、scope、schema、質問/収集/調停の設定、評価記録、互換性</td>
+</tr>
+<tr>
+<td>Job</td>
+<td>冪等性キー、lease、予算予約、親実験、grant、入力参照、処理状態</td>
+</tr>
+</tbody>
+</table></div>
+<p>すべての自由文をeventに無制限コピーしない。原資料はscope別のcontent-addressed storeへ置き、必要な参照を持つ。同じbytesでもprojectや同意範囲が異なるなら、公開権限を共有しない。<a href="reference/jev-warden-complete-design-v0.2.md">W0</a></p>
+<h3 id="s10-10-2">10.2 Requestedとeffective</h3>
+<p>beforeで観測したtool input、afterに載るinput、runnerが実際に使ったargvを別fieldに持てるようにする。異なる層の値を一つに上書きしない。最終argvが観測できない場合、推定した値を実行証明としない。</p>
+<p>trusted runner receiptと、tool出力の文字列「all tests passed」は別の由来である。信頼した署名/プロセス境界がないローカル構成では、その限界を記録する。</p>
+<h3 id="s10-10-3">10.3 検証の鮮度</h3>
+<p>source、test、fixture、config、lockfile、依存・runnerの版、実行環境をsnapshotへ結び付ける。HEADだけではdirty/untracked変更を表せない。</p>
+<p>receiptの成功/失敗と、現在への適用性<code>current / stale / applicability_unknown</code>を分ける。実行中に対象が変わり得た場合、開始・終了hash一致だけで途中の変更を否定しない。強い証拠は固定snapshotで実行する。</p>
+<p>未観測の外部変更がある場合は<code>capture_gap</code>を残し、再snapshotする。Jevの「この変更は関係なさそう」だけで失効を免除しない。依存を限定できない初版では保守的に広いsnapshot単位で失効させる。</p>
+<h3 id="s10-10-4">10.4 時間とscope</h3>
+<p><code>occurred_at</code>、<code>observed_at</code>、<code>resolved_at</code>を分ける。古いepisodeを評価する際、現在の最新版を当時の定義として補わない。server clockとclient clockの順序を直接比較せず、server sequenceと受信時刻の役割を分ける。</p>
+<p>messageやexecution IDが分からない場合は<code>unknown</code>を許す。存在しないIDを生成してhost由来と見せない。Warden内部IDはprefix・名前空間で区別する。</p>
+<p><a id="s11"></a></p>
+<h2>11. Relation Checkerとテスト設計の観測</h2>
+<h3 id="s11-11-1">11.1 最小単位</h3>
+<pre><code class="language-text">R(source, target | question, assumptions, source_coverage)
+    → typed observation + missing facts + source references
+</code></pre>
+<p>support、grounding、test coverageを初期の三族とする。docs/config整合、plan/action整合、query/document適合へ拡張できるが、全関係をgood/bad/unknownへ潰さない。</p>
+<h3 id="s11-11-2">11.2 仕様と推測の境界</h3>
+<p>仕様上の根拠、仕様の記述状態、追加判断の出所、提示証拠の充足を別軸にする。曖昧な仕様に対する仮決定は正常に存在する。<code>assumed</code>を自動的なエラーにしない。</p>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>軸</th>
+<th>観測例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>根拠</td>
+<td>explicitly_required / entailed / compatible_not_required / contradicted / indeterminate</td>
+</tr>
+<tr>
+<td>仕様</td>
+<td>addressed / unaddressed_in_scope / ambiguous / internally_conflicting / scope_unknown</td>
+</tr>
+<tr>
+<td>決定</td>
+<td>adopted / provisional / unresolved / not_needed</td>
+</tr>
+<tr>
+<td>証拠</td>
+<td>sufficient / missing_definition / missing_source / truncated / stale / unknown</td>
+</tr>
+</tbody>
+</table></div>
+<p>「自然だからそうだろう」はentailedではない。明示前提を示せる必要がある。矛盾する規定から任意の挙動を正当化せず、適用範囲・優先順位・改訂を確認する。</p>
+<h3 id="s11-11-3">11.3 具体的なsufficiency</h3>
+<p>一般的な「資料は十分か」より、主張が依存する事実を名指しする。</p>
+<pre><code class="language-text">対象のtest_codeには、EXPECTED_CALLSの定義が含まれ、
+期待する合計呼出回数を名前から推測せずに読み取れるか。
+</code></pre>
+<p>必要な定義の存在を構文的に分かる場合はコードで確認する。どの定義が該当するか、同名別スコープではないかを意味判断で補う。資料が全くない場合は未評価とし、低い確率を事実否定として返さない。</p>
+<h3 id="s11-11-4">11.4 テストの性質</h3>
+<p>守る契約、検出したい具体的な誤実装、許容する実装変更を先に特定する。観測点、assertionの識別力、mockの境界、期待値の出所、異常系・境界値を、その契約との関係で問う。</p>
+<p>呼出回数や内部値への依存は、それ自体が悪ではない。例えば通知重複を防ぐ契約では回数の検証が必要になり得る。問題は、契約に不要な実装詳細を固定しているかである。</p>
+<p>mutation後にテストが落ちても、型エラーやsetup障害であれば目的のassertionが回帰を検出した証拠ではない。実行の理由を区別する。</p>
+<h3 id="s11-11-5">11.5 原文とstoryを分ける</h3>
+<p>agentの「仕様通りです」という報告は、spec→behaviorの判定には必要がなければ送らない。report→diffを別に検査する。原文、仮定、自分の結論を同じ入力fieldへ混ぜない。</p>
+<p>仕様は日本語原文を保つ。翻訳を自動的な正本にせず、日英の質問差を調べる場合は同じ原資料への別probe版として記録する。日本語性能は評価対象であって保証ではない。</p>
+<h3 id="s11-11-6">11.6 相対選択・絶対適合・二段階</h3>
+<p>最も関連する節を選べても、その節が主張を裏付けるとは限らない。candidateにnoneを含め、重要なら候補ごとの絶対適合も問う。複数節が必要なら小さな証拠集合を作る。<a href="reference/jev-warden-complete-design-v0.2.md">W0</a><a href="https://docs.typesafe.ai/cookbooks/skill_suggestion" rel="noopener noreferrer" target="_blank">J03</a></p>
+<p>既にある証拠に対する独立質問は同時に投げる。答えによって新しい資料を取得する場合だけ二段目に進む。localizationは実在する節・diff block・test IDから選び、行番号や引用はコードで原文から解決する。</p>
+<p>多くのedgeが支持されても、claim抽出の取りこぼしや未検査の変更は残り得る。全体の正しさへ推移的に拡張しない。</p>
+<p><a id="s12"></a></p>
+<h2>12. Jev transport・fan-out・先読み・予算</h2>
+<h3 id="s12-12-1">12.1 接続の所有者</h3>
+<p>Jev keyはserver側transportまたは認証済みLab brokerに置く。TUI・agentの会話・PolicyBundleへ渡さない。接続先、モデル、送信許可、retry上限は固定設定で選び、認証失敗の回避としてendpointを勝手に変更しない。</p>
+<p>OpenCodeの主モデルproviderをJev providerへ偽装しない。Jevは独立した判断APIであり、通常の文章生成APIとは分けて扱う。</p>
+<h3 id="s12-12-2">12.2 多数の質問、小さいstate</h3>
+<p>同じsnapshotと許可範囲の必要証拠を共有できる質問をbatchにする。全会話と全diffを毎回渡すのではなく、複数の狭いstateへ質問を多く当てる。質問数を固定で32に制限する等の未確認の上限は設けず、対象API・SDK・アカウントの実際の上限をdoctorで確認する。<a href="reference/jev-warden-complete-design-v0.2.md">W0</a><a href="https://docs.typesafe.ai/primitives" rel="noopener noreferrer" target="_blank">J01</a><a href="https://docs.typesafe.ai/patterns/fan-out" rel="noopener noreferrer" target="_blank">J02</a></p>
+<p>質問IDには意味を隠さず、instructionsだけで対象・関係・基準が分かるようにする。分岐先の質問を既に準備できる場合は投機的に評価し、選択した分岐の結果だけを使用する。</p>
+<h3 id="s12-12-3">12.3 即時経路と先読み経路</h3>
+<p>即時経路はdispatchまでの期限を持ち、先読み経路は短命のscoped taskと耐久jobを使い分ける。deadlineを過ぎた結果は古いrequestへ押し込まず、対象snapshotがまだ有効な次の境界だけに使う。</p>
+<p>bounded queueとconcurrencyを設け、古いsnapshotのpending batchはcoalesce/cancelする。捨てた事実は数える。callbackの数だけ無制限にrequestを作らない。</p>
+<h3 id="s12-12-4">12.4 Cache</h3>
+<p>scope、snapshot、evidence hashes、probe定義、input builder、criteria、言語、仮定、model/request options、data policy版をキーに含める。同じ内容でも別scopeの結果を無許可で共有しない。</p>
+<p>mutable model aliasのcacheは寿命と返却モデルを管理する。cache hitとfresh inferenceは別に記録し、安定性や校正の評価ではfreshな再実行を使う。policyを変更したのに旧結果を新policyの測定として数えない。</p>
+<h3 id="s12-12-5">12.5 回答検証</h3>
+<p>Choice候補、質問ID、Scoreの尺度、Noulの範囲、finiteな値、分布、必要fieldを検証する。丸め許容は対象APIの契約に基づき固定する。無効な分布を黙って正規化せず、無効な値をsafe/passへ変換しない。</p>
+<p>Noulには別のconfidenceを捏造しない。Choice/Scoreのconfidenceを正答率にせず、複数questionの回答を独立証人として多数決しない。<a href="reference/jev-warden-complete-design-v0.2.md">W0</a><a href="https://docs.typesafe.ai/confidence" rel="noopener noreferrer" target="_blank">J05</a></p>
+<h3 id="s12-12-6">12.6 予算</h3>
+<p>Jev観測、生成review、候補生成、E2E主モデル、隔離実行、context tokens、保存容量を分ける。Jevへは広い観測枠を与え、重い評価をその外側で絞る。料金や固定の200ms等を保証しない。</p>
+<p>全体上限はKernelが予約・清算する。複数sessionが別々に上限まで使って総額を超えないよう集約する。timeout時のusage不明はゼロ請求とせずunknown reservationを照合する。</p>
+<p><a id="s13"></a></p>
+<h2>13. 意味検索・検証計画・次の観測</h2>
+<h3 id="s13-13-1">13.1 Semantic retrieval</h3>
+<p>文字列検索、シンボル索引、差分解析で候補を作り、Jevで意味を絞る。名前の類似だけで一つに決めず、仕様・実装・caller・testの探索経路を並行して残す。細部を特定できなければ粗いmodule範囲まで返し、未探索領域を記録する。</p>
+<p>候補選択後に該当性を再確認する。検索失敗は仕様全体のabsenceではない。読み取り権限、path実体、symlink、remote locationを取得直前にもチェックする。</p>
+<h3 id="s13-13-2">13.2 反証を届ける</h3>
+<p>現在の仮説を支持する資料だけでなく、矛盾する資料を別枠で主モデルへ出す。反証を無関係として消さない。検索した候補と除外理由を記録し、原文へ戻れるようにする。</p>
+<h3 id="s13-13-3">13.3 型付きの補助操作</h3>
+<pre><code class="language-text">find_definition(symbol_ref, snapshot)
+read_source(source_ref, range)
+inspect_callers(symbol_ref, snapshot)
+compare_artifacts(source_ref, target_ref, relation)
+suggest_checks(claim_refs, snapshot)
+run_registered_check(check_ref, isolated_snapshot)
+request_scoped_review(finding_ref, evidence_refs)
+</code></pre>
+<p>これらは独自portの設計名である。OpenCode APIをそのまま示すコードではない。Jevが実行候補を選んでも、brokerがgrant、実体path、版、前提条件、予算を再確認する。</p>
+<h3 id="s13-13-4">13.4 Verification planner</h3>
+<p>要求の各behaviorに対し、仕様上の根拠、実装の観測点、testのassertion、現在のreceiptを結ぶ。不足するcellを可視化し、追加テストの量ではなく、具体的な誤実装を弾ける検証を選ぶ。</p>
+<h3 id="s13-13-5">13.5 仮説と観測</h3>
+<p>実装不良、古い期待値、不正fixture、環境差等の仮説を併存させる。次に読む定義や実行するcheckが、どの仮説を区別するかを問う。失敗回数が増えても新情報を得ていれば停滞ではない。</p>
+<p>Jevの値を厳密なベイズ事後確率や情報利得と呼ばない。探索を支えるheuristicとして扱い、実際に何が判明したかを保存する。</p>
+<h3 id="s13-13-6">13.6 手順の再利用</h3>
+<p>有効な調査手順は開始条件、必要証拠、許可能力、停止条件、反例を持つ。成功traceの単純なmacroではない。新しい方法が必要なら生成モデルへ戻し、その方法の実行許可と評価は別に行う。</p>
+<p><a id="s14"></a></p>
+<h2>14. RPC：TUI・Labとの接続と認可</h2>
+<h3 id="s14-14-1">14.1 Transportと権限を混同しない</h3>
+<p>OpenCodeのtyped RPCへWardenの読み取りcontractを載せる。fixed Effect型にはregister、events.emit、handlerのerror factoryがあるが、認証済みcaller identityやraw requestの取得はこの型から保証されない。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/rpc.ts" rel="noopener noreferrer" target="_blank">OC09</a></p>
+<p>従って、RPCが使えるだけで任意clientからのpromote/grant/executeを許さない。OpenCode serverの認証、transportの認可、Wardenのscope grantを別層にする。sessionIDをinputに含めただけでは、そのsessionへアクセスする権限の証明にならない。</p>
+<h3 id="s14-14-2">14.2 読み取り契約</h3>
+<p>以下は独自contractの設計案。</p>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>用途</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>status</code></td>
+<td>service/adapter/policy/queueの状態</td>
+<td>credentialは返さない</td>
+</tr>
+<tr>
+<td><code>findings.list</code></td>
+<td>scope別の一覧</td>
+<td>page/cursorとserver scopeを検証</td>
+</tr>
+<tr>
+<td><code>finding.get</code></td>
+<td>観測・証拠参照</td>
+<td>原文の閲覧grantを再確認</td>
+</tr>
+<tr>
+<td><code>changes.since</code></td>
+<td>Labの確定sequenceから差分回収</td>
+<td>native event replayを仮定しない</td>
+</tr>
+<tr>
+<td><code>snapshot.get</code></td>
+<td>scopeの一貫した表示snapshot</td>
+<td>cut sequenceを返す</td>
+</tr>
+<tr>
+<td><code>policy.describe</code></td>
+<td>active/pinned/candidateの説明</td>
+<td>最適化器へ監査fixtureは返さない</td>
+</tr>
+<tr>
+<td><code>review.request</code></td>
+<td>許可された有限review job登録</td>
+<td>idempotencyと予算reservation</td>
+</tr>
+</tbody>
+</table></div>
+<p>管理操作は別contract・別principal・別endpoint等の認可境界に置く。host RPCから認証主体を確実に取得できないなら、read-onlyに限定し、管理はLabの認証済みローカル経路へ分離する。</p>
+<h3 id="s14-14-3">14.3 Eventは通知、正本ではない</h3>
+<pre><code class="language-json">{"type":"findings_changed","serverId":"server-A","locationId":"loc-A",
+ "sessionId":"session-A","sequence":84,"projectionVersion":3}
+</code></pre>
+<p>これは独自payload例である。通知は「変わったので取得せよ」とする。原文、token、full transcriptをbroadcastしない。RPC docsはlive-onlyで切断中のeventを失う説明だったため、Wardenは通知の欠落・重複・順序逆転を前提にする。<a href="https://opencode.ai/v2/docs/build/plugins/rpc" rel="noopener noreferrer" target="_blank">D03</a></p>
+<h3 id="s14-14-4">14.4 再接続protocol</h3>
+<ol>
+<li>subscriptionを確立し、通知を一時bufferする。</li>
+<li><code>snapshot.get</code>で確定状態とcut sequenceを得る。</li>
+<li>cutより新しいbufferと<code>changes.since</code>を適用する。</li>
+<li>重複はsequence/IDで除外し、cursorが古すぎればsnapshotからやり直す。</li>
+</ol>
+<p>subscribeとsnapshotの間のrace、server epoch変更、location切替、permission撤回を試験する。Labのsequenceはscope内の確定順序であり、OpenCode native eventに同じcursorがあるとは仮定しない。</p>
+<h3 id="s14-14-5">14.5 取消・errors・JSON</h3>
+<p>入出力はruntime schemaで検証し、型推論だけを信用しない。Effect RPC handler contextにPromise版と同じsignalがあると仮定せず、実際のScope/取消契約へ接続する。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/rpc.ts" rel="noopener noreferrer" target="_blank">OC09</a> cancelが副作用を取消したか不明ならjob IDで後から照合する。</p>
+<p>公開errorはconfiguration / incompatible_host / scope_denied / unavailable / budget_exhausted / invalid_response / cancelled等に分類し、provider error body・鍵・送信資料をそのまま返さない。event payloadはobjectにする設計を採る。<a href="https://opencode.ai/v2/docs/build/plugins/rpc" rel="noopener noreferrer" target="_blank">D03</a></p>
+<h3 id="s14-14-6">14.6 RPCとMCP</h3>
+<p>RPCはTUI・外部client・plugin間の制御通信、主モデルに見せる操作は登録済みtoolまたは必要時のMCPとする。モデルが任意の管理RPCを呼べる構成にしない。既存jev-crosscheckの明示手順は別入口として残す。</p>
+<p><a id="s15"></a></p>
+<h2>15. Storage・outbox・複数sessionの整合性</h2>
+<h3 id="s15-15-1">15.1 保存先の責務</h3>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>保存先</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Server memory</td>
+<td>進行中call、短いcache、prefetch、controller状態</td>
+</tr>
+<tr>
+<td>Plugin-scoped storage</td>
+<td>接続設定参照、bounded spool、ack cursor。採用の正本ではない</td>
+</tr>
+<tr>
+<td>Lab SQLite</td>
+<td>jobs、episodes、interventions、bundle評価、active pointer、outbox</td>
+</tr>
+<tr>
+<td>Lab evidence store</td>
+<td>scope別の原文・snapshot・実行出力</td>
+</tr>
+<tr>
+<td>TUI storage</td>
+<td>選択panelや表示設定。model key・grant・全証拠は置かない</td>
+</tr>
+</tbody>
+</table></div>
+<p>plugin-scoped storageのdurabilityやtransaction特性は対象版で確認する。TUIではdurable storeとhot-reload用memoryが別に宣言されている。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/context.ts" rel="noopener noreferrer" target="_blank">OC13</a> どちらもLabの学習正本を二重化するためには使わない。</p>
+<h3 id="s15-15-2">15.2 Outboxとingestion</h3>
+<p>server pluginが観測をLabへ送る際、scope、event ID、sequence、hashを持つ。Labは重複eventをidempotently保存し、確定後にackする。ack前にserverが落ちても再送できる。at-least-onceであってexactly-onceではない。</p>
+<p>eventに個人情報が含まれ保存許可がない場合は、許可されたsummary/metadataだけを残す。記録欠落を<code>durability_degraded</code>または<code>redacted_capture</code>として可視化する。</p>
+<h3 id="s15-15-3">15.3 Controller lease</h3>
+<p>同じsessionを複数TUIが開いても、推論・介入・学習jobは一回だけ作る。authoritative controllerをserver/session単位のleaseで管理する。UIが増えた数だけJev requestが増えない。</p>
+<p>controllerが入れ替わったら世代IDを更新する。古いownerからの介入やjob completionは対象世代を確認する。leaseを持つこと自体はユーザーのgrantを代替しない。</p>
+<h3 id="s15-15-4">15.4 キュー</h3>
+<pre><code class="language-text">queued → leased → running → succeeded
+                       ├→ retry_wait
+                       ├→ failed
+                       ├→ cancelled
+                       └→ result_unknown
+</code></pre>
+<p>jobはscope、snapshot、policy、入力digest、grant版、親実験、budget reservation、lease期限を持つ。worker再起動後も期限とgrantを再確認する。定義探索は安全に再試行できても、外部作用を持つjobはまず実行状況を照合する。</p>
+<h3 id="s15-15-5">15.5 削除・撤回・export</h3>
+<p>原資料が削除・送信不可になったら、cache、episode、生成fixture、policyの依存を追跡する。依存を持つcandidateの停止、active bundleの再評価や退役を行う。モデルproviderへ既に送信した情報をローカル削除だけで取り消せるとは言わない。</p>
+<p>exportはscopeと保存許可を再検証する。secretや非許可資料が含まれるraw traceを一括ZIPへ混入しない。</p>
+<p><a id="s16"></a></p>
+<h2>16. PolicyBundle・registry・reloadの安全な接続</h2>
+<h3 id="s16-16-1">16.1 一つのsessionに一つのpolicy</h3>
+<p>採用済みbundleをLabから取得し、schema・digest・scope・host/model互換性を検証する。session開始時にpolicyをpinし、通常の更新は新しいsessionへ適用する。既存sessionの評価中にcandidateへすり替えない。</p>
+<pre><code class="language-text">Lab active pointer: v12 → v13
+既存session A: v12のまま
+新規session B: v13
+緊急失効: Aのadvisoryを停止し、理由を明示
+</code></pre>
+<p>roll backは次のpolicy適用を戻すことであり、過去のコード変更や外部操作を戻すことではない。問題版が関わった成果物には再確認を付ける。</p>
+<p>server再起動は新しいsession開始とは限らない。既存sessionをresumeする時は、Labに保存した元のpolicy pinを復元する。新server epochへの対応を検証してから再bindし、復元できない場合はactive最新版へ自動置換せず保留する。旧epochの処理中結果は破棄するが、pinの履歴自体は失わない。</p>
+<h3 id="s16-16-2">16.2 なぜreloadを採用ボタンにしないか</h3>
+<p>registry transformは順に再適用され、既読の値は変更されず、resource調整も別である。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/README.md" rel="noopener noreferrer" target="_blank">OC04</a> <code>tool.reload()</code>や<code>skill.reload()</code>が、全sessionのengine・tool契約・policyを一括で原子的に切り替える保証はない。</p>
+<p>従って、学習bundleが採用されるたびに全registryをreloadしない。初版は安定したtool wrapperを登録し、そのexecutorがsession pinに対応する内部policyを参照する。context上の推薦・表示もsession別にする。</p>
+<h3 id="s16-16-3">16.3 共存するtool schema</h3>
+<p>schemaを変更する必要がある場合は新しいversioned tool IDを使うか、安全な区切りでsessionを再開する。同じ名前のschemaだけを変えて、古いmodel callから新executorへ渡さない。</p>
+<p>catalogのepoch、tool schema digest、active registrationsを記録し、外部pluginやhost更新によって前提が変わったら互換性確認を行う。session pinは外部registryの全変更を凍結する魔法ではない。</p>
+<h3 id="s16-16-4">16.4 自動変更できるもの</h3>
+<p>質問・必要証拠の指定・許可済みselectorの設定・検索順序・batch・trigger・助言template・頻度・既存手順参照を対象とする。tool/moduleの任意import、新しいprovider、任意shell、権限上限の変更は対象外。</p>
+<p>複雑な変種は一つの仮説ごとに分ける。質問と入力構築を一体変更するなら両方を版付けし、可能なら寄与を比較する。動作条件が変わった質問のraw確率を同じ意味の尺度として比較しない。</p>
+<h3 id="s16-16-5">16.5 Transform実装</h3>
+<p>非同期に検証済み設定を取得し、immutable snapshotへ確定した後、同期transformで適用する。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/README.md" rel="noopener noreferrer" target="_blank">OC03</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/README.md" rel="noopener noreferrer" target="_blank">OC04</a> transform内部でJevやLabを呼ばない。Wardenが所有しない登録を無断で削除せず、他pluginとの順序・同名衝突をdoctorで検出する。</p>
+<p><a id="s17"></a></p>
+<h2>17. TUI・remote client・人間への説明</h2>
+<p>TUIは別entrypointのpluginであり、serverの判断処理を再実行する場所ではない。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/index.ts" rel="noopener noreferrer" target="_blank">OC11</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/plugin.ts" rel="noopener noreferrer" target="_blank">OC12</a> 原文・key・全traceをUIへ流す必要はなく、権限に応じたprojectionを表示する。</p>
+<h3 id="s17-17-1">17.1 初版UI</h3>
+<pre><code class="language-text">prompt footer:
+  Warden / policy v12 / probes 31 / unresolved 2 / evidence stale 1
+
+session panel:
+  Findings | Evidence | Decisions | Experiments
+
+detail:
+  finding → claim → 原文参照 → Jev観測 → 後続の確認
+</code></pre>
+<p>固定型では<code>prompt.footer.status</code>、<code>session.panel</code>、<code>sidebar.content</code>等のslotがある。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/context.ts" rel="noopener noreferrer" target="_blank">OC13</a> 初期UIは既存slotへの追加を使い、appやprompt全体のreplaceを避ける。競合や使えないsurfaceでは独自pageまたはCLI/RPC照会へ縮退する。</p>
+<h3 id="s17-17-2">17.2 操作案</h3>
+<p><code>/warden</code>、<code>/warden-status</code>、<code>/warden-review</code>、<code>/warden-pause</code>、<code>/warden-lab</code>は設計上のcommand名。実際のkeymap/registration形式は対象版で確認する。pauseは観測・助言・学習のどれを止めるかを区別し、固定のnative権限を解除しない。</p>
+<p>クリックで原文を取得する際もscopeを再検査する。TUIのconfirm dialogがtrueだったというpayloadだけで、新しいgrantやpolicy採用を認めない。認証されたユーザー操作としてserverの別経路で記録する。</p>
+<h3 id="s17-17-3">17.3 二台のclient</h3>
+<p>同じserver/sessionへ二台接続してもcontrollerは一つ。panelや選択行はclient-local、findingとjobはserver/Labの正本。切断中の変化はsnapshot/deltaで回収する。session切替時は別scopeの内容を残さず、遅れたレスポンスも破棄する。</p>
+<p>remote file pathはclientのローカルファイルとして開かない。server側source IDを介して取得・表示する。原文が非公開なら説明とlocatorだけを出す。</p>
+<h3 id="s17-17-4">17.4 観測と通知を分離する</h3>
+<p>正常な多数の観測はpanelに集計し、主モデルへ全件注入しない。重要な反証・不足だけcontextへ渡す。UI表示成功は「主モデルが読んだ」証拠ではなく、context供給も「役立った」証拠ではない。</p>
+<p><a id="s18"></a></p>
+<h2>18. Generation・worktree・隔離実験</h2>
+<h3 id="s18-18-1">18.1 小さな生成と自律作業を分ける</h3>
+<p>固定Plugin Contextは<code>generate</code> domainを持ち、session側にもgenerateがある。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/plugin.ts" rel="noopener noreferrer" target="_blank">OC05</a><a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts" rel="noopener noreferrer" target="_blank">OC06</a> ただし署名と戻り型の詳細は、対象版のGenerateApiまで実装時に確認する。</p>
+<p>セッション外の短い生成は、質問候補、原因診断、限定した説明に用いる。会話履歴やtoolsを自動的に持つレビューagentと同一視しない。非セッション生成が無課金・非記録・秘密であるとも扱わない。</p>
+<p>資料を読んでコードを変更する実験は、別の有限session/jobとして扱い、開始状態、許可tools、停止条件、model、予算、originを指定する。主sessionのkey・履歴・全権限を丸ごと継承しない。</p>
+<h3 id="s18-18-2">18.2 Worktreeは作業領域</h3>
+<p>公開worktree APIを使える場合は生成・一覧・削除をadapter化する。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/worktree.ts" rel="noopener noreferrer" target="_blank">OC10</a> Warden専用のためにhost全体のworktree providerを上書きしない。</p>
+<p>worktreeを作っただけではmain作業のdirty/untracked変更が再現されたことにならない。固定commit、承認された未commit overlay、対象のuntracked files、fixture/config/lockfileを明示してsnapshotを構成する。コピー前後のmanifestを確認する。</p>
+<h3 id="s18-18-3">18.3 OS境界</h3>
+<p>worktreeはfilesystem上の作業分離であって、credential、network、process、同一UIDからのアクセスの隔離ではない。依存install、テスト、mutationはcode executionとして扱う。</p>
+<p>隔離executorは許可されたmount、制限したenv、network方針、CPU/時間/出力上限を持つ。監査fixtureと採用器の書込み権限を学習用agentに与えない。実験repo内のAGENTS.md等を読んでも、その内容で実験のgrantを拡大しない。</p>
+<h3 id="s18-18-4">18.4 後片付け</h3>
+<p>jobごとの所有manifestとworktree IDを記録し、自分が作った対象だけを削除する。名前やpath prefixだけで破棄しない。使用中、未知の変更、ownership不明、結果不明ならcleanupを保留し、ユーザー領域を巻き込まない。</p>
+<h3 id="s18-18-5">18.5 代表的mutation検証</h3>
+<pre><code class="language-text">固定snapshot S1
+  ├─ baseline test実行
+  ├─ 具体的誤実装M1を隔離環境へ適用
+  ├─ 対象test実行
+  ├─ 失敗理由をrunnerとassertionで照合
+  └─ receipt + finding resolution → episode
+</code></pre>
+<p>baselineから失敗している環境を、mutationが検知された成功例にしない。生成したmutationが契約上の誤実装であることも確認対象とする。</p>
+<p><a id="s19"></a></p>
+<h2>19. 経験化・自己改善・能動的フィードバック</h2>
+<h3 id="s19-19-1">19.1 三つのループを最初から閉じる</h3>
+<pre><code class="language-text">即時：event → 狭い証拠 → Jev fan-out → 根拠取得/助言
+経験：観測 + 後続結果 → 確認/反証/保留 → Episode
+改善：Episode → 変種生成 → 比較 → 採用/撤回 → 次session
+</code></pre>
+<p>人間が毎回「振り返れ」「質問を調整しろ」と言う運用にしない。所見が解決した時、同じ誤検知・見逃しが蓄積した時、強い反例が出た時、モデル/hostが変わった時に自動jobを起こす。何も警告しなかった作業からも少量の無作為監査を行う。</p>
+<h3 id="s19-19-2">19.2 自分で確かめる</h3>
+<p>必要な定義の追加取得、仕様原文との照合、固定snapshotのcheck、具体的mutationを使って、不確実な所見を確かめる。ユーザーの意思や未決定仕様は実験では確定しないため、仮決定/未解決として残す。</p>
+<p>Jevの同意を正解labelにせず、判断の由来を<code>direct_source / observed_execution / explicit_user_decision / weak_model_label / unknown</code>として残す。会話終了や苦情のなさは原則unknown。</p>
+<h3 id="s19-19-3">19.3 当時の情報と、後から知ったこと</h3>
+<p>Episodeはdecision時点の入力と、後続のoutcomeを分ける。後から取得したEXPECTED_CALLS=3を、当時見えていたstateへ遡って入れない。</p>
+<p>追加資料を読む候補policyを評価するなら、当時のsnapshot・grant・検索可能範囲から取得させ、その時間・費用も計上する。現在の最新定義を無料の情報として与えない。</p>
+<h3 id="s19-19-4">19.4 改善対象</h3>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>対象</th>
+<th>候補の例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>question</td>
+<td>一問を分割、条件を明示、誤誘導を除く</td>
+</tr>
+<tr>
+<td>input builder</td>
+<td>定数定義を含める、無関係なreportを外す</td>
+</tr>
+<tr>
+<td>retrieval</td>
+<td>関連節・caller・fixtureの探索順を変更</td>
+</tr>
+<tr>
+<td>timing</td>
+<td>毎editではなくdispatch境界で集約</td>
+</tr>
+<tr>
+<td>guidance</td>
+<td>警告だけでなく次の具体的参照を添える</td>
+</tr>
+<tr>
+<td>procedure</td>
+<td>成功した調査を条件付きの短い手順へまとめる</td>
+</tr>
+<tr>
+<td>retirement</td>
+<td>効果のないprobeや重複通知を消す</td>
+</tr>
+</tbody>
+</table></div>
+<p>質問を直しても材料が足りなければ改善しない。入力構築も第一級の学習対象にする。通常コードで確実にできることを見つけたら、決定的な実装への移管を提案する。</p>
+<h3 id="s19-19-5">19.5 Candidate生成</h3>
+<p>生成用モデルへ、開発用の失敗族、当時の入力、得られた証拠、悪化例を渡す。原因仮説、変更本体、適用scope、期待する改善、悪化し得るケース、必要な比較を出力させる。<a href="reference/jev-warden-complete-design-v0.2.md">W0</a><a href="https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery" rel="noopener noreferrer" target="_blank">J04</a></p>
+<p>最初は小さな変種生成と固定比較を使う。GEPAや追加の学習モデルは差し替え点として残すが必須依存にしない。</p>
+<h3 id="s19-19-6">19.6 メタモルフィックな検査</h3>
+<p>定義あり/なし、正しい/誤った値、識別子だけの変更、reportだけの追加、同名別スコープ等を比較する。どの入力変化に判断が反応すべきかを検査し、単なる同じ質問の多数決にしない。</p>
+<p>自動変換が意味を保つとは限らない。対照ケースの期待関係を検証し、同じ原事例からの派生は同じdataset groupに束ねる。</p>
+<p><a id="s20"></a></p>
+<h2>20. 評価・採用・監査と固定Kernel</h2>
+<h3 id="s20-20-1">20.1 Candidate lifecycle</h3>
+<pre><code class="language-text">candidate → contract_checked → replay_passed → shadow
+         → experiment_passed → canary → active
+各段階 → paused / rejected
+active → retired / rollback
+</code></pre>
+<p>この遷移は承認済み範囲内で自動実行する。候補が生まれるたび人間に承認を求めない。一方、証拠が足りなければ自動で保留する。</p>
+<h3 id="s20-20-2">20.2 三層の評価</h3>
+<p><strong>契約評価</strong>はschema、grant、出所、scope、取消、予算、通知量、snapshot、ID、policy非弱化等をofflineで確認する。</p>
+<p><strong>判断評価</strong>は固定ケースで情報不足の検出、relation分類、反証の取り逃し等を比較する。</p>
+<p><strong>作業評価</strong>は同じ初期環境から主モデルを動かし、候補版・現行版・Wardenなしで成果、時間、手戻り、介入負担を比較する。OpenCodeでClaude固有の<code>plugin eval</code>が使えるとは仮定せず、公開client/APIと隔離executorを使う独自harnessを設計する。</p>
+<h3 id="s20-20-3">20.3 Dataset境界</h3>
+<p>Discovery、Development、Promotion、Auditを分ける。session、PR、task、元fixtureの派生が別集合へ漏れないようgroupを持たせる。大量のtool eventは大量の独立した作業成果ではない。</p>
+<p>改善器が繰り返し見た評価ケースは開発データへ格下げする。hidden auditの詳細を候補生成へ戻したら、それ以降hiddenとは数えない。モデル差・host差・project差を分けて集計する。</p>
+<h3 id="s20-20-4">20.4 採用条件</h3>
+<p>固定境界への違反がないこと、事前に決めた正しさの非劣性を満たすこと、その上で事前選択した有用性指標に改善があることを要求する。低い遅延だけで正しさを犠牲にしない。少数の成功例だけで閾値を普遍化しない。</p>
+<p>候補数と評価回数を記録し、たまたま勝った候補の昇格を抑える。必要件数や効果幅は実測の変動・risk・task群から決め、本書に未検証の万能値を置かない。</p>
+<h3 id="s20-20-5">20.5 評価器を実際に分離する</h3>
+<p>candidate generatorは監査fixture、grant、予算上限、active pointer、採用基準へ書き込めない。promptで「書き換えるな」と指示するだけでは分離ではない。別プロセス・権限・volume・限定APIを使う。</p>
+<p>Warden Coreのschema checkを通ったことは、candidateの意味が正しい証拠ではない。モデルによるgraderを使う場合もweak labelとして別に監査する。</p>
+<h3 id="s20-20-6">20.6 ロールバック</h3>
+<p>promoterが評価参照とactive pointerをtransactionで切り替える。事故で半分だけ公開しない。実行中sessionは通常pinを維持する。緊急のdata/grant違反ではそのbundleを失効し、advisory停止と対象成果物の再確認を行う。</p>
+<p>文脈注入の影響は巻き戻しで消えない。旧版へ戻した事実と、既に影響したsessionの扱いを別に記録する。</p>
+<p><a id="s21"></a></p>
+<h2>21. 技術構成・設定・配布・互換性</h2>
+<h3 id="s21-21-1">21.1 Repository案</h3>
+<pre><code class="language-text">packages/
+  core/                 純粋TS、状態・relation・batch・調停
+  contracts/            内部event/JSON、RPC定義
+  opencode-server/      Effect plugin adapter
+  opencode-tui/         Solid/OpenTUI表示adapter
+  claude-mod/           既存設計の別adapter。OpenCode型を漏らさない
+  lab/                  durable jobs、候補生成、学習記録
+  evaluator/            固定評価・採用
+  executor/             隔離snapshotの実験
+fixtures/
+  host-contracts/
+  semantic/
+  tasks/
+</code></pre>
+<p>最初から全部を公開packageにしない。pure Coreとhost adapterの依存をbuildで検査する。CoreへEffect、OpenCode、Node、TUIをimportしない。server adapterの依存は対象OpenCode runtimeと照合し、LabのNode runtimeと同一視しない。<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/package.json" rel="noopener noreferrer" target="_blank">OC02</a></p>
+<h3 id="s21-21-2">21.2 設定</h3>
+<p>本資料にはserver pluginを明示的なlocal pathでloadする設定の<strong>参考例</strong>を付ける。<code>plugins</code>配列・optionsの形式はdocsにあるが、旧新docsの混在があるため、対象バイナリで適用を確認する。<a href="https://opencode.ai/v2/docs/build/plugins" rel="noopener noreferrer" target="_blank">D01</a></p>
+<p>存在しないpublished packageをinstall手順として案内しない。<code>@opencode/plugin</code>のソース版2.0.7はregistry公開確認ではない。releaseのlockfile・exports・依存を検証してからセットアップコマンドを確定する。</p>
+<p>TUI pluginの発見・install設定は別の適合項目。server設定と同じentryを入れれば両方loadされると仮定しない。サンプルJSONに架空のTUI設定keyを混ぜない。</p>
+<h3 id="s21-21-3">21.3 初回有効化</h3>
+<p>初回にproject、server、location、送信可能資料、Jev/生成provider、予算、実験能力、自動採用範囲を確認する。設定にkeyを書かずsecret referenceを使う。停止・export・削除・失効の経路を先に提供する。</p>
+<p>以後、その承認範囲の内側でループを回す。scope外へ広げる変更だけを再確認する。学習policyの更新でgrantを増やさない。</p>
+<h3 id="s21-21-4">21.4 Doctor</h3>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>記録項目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Host</td>
+<td>CLI版/channel、server版、runtime、platform</td>
+</tr>
+<tr>
+<td>Plugin</td>
+<td>実package版、型/lockfile digest、adapter版、登録順</td>
+</tr>
+<tr>
+<td>Capabilities</td>
+<td>prompt/context/tool/RPC等の宣言と実測</td>
+</tr>
+<tr>
+<td>Identity</td>
+<td>server epoch、location解決、session親子</td>
+</tr>
+<tr>
+<td>Execution</td>
+<td>before/permission/after順序、cancel、CodeMode/MCP</td>
+</tr>
+<tr>
+<td>Persistence</td>
+<td>spool、Lab handshake、reconnect、storage寿命</td>
+</tr>
+<tr>
+<td>UI</td>
+<td>remote接続、slot、二台client、headless</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>doctor.example.json</code>はテンプレートであり、runtime項目はすべて<code>NOT_RUN</code>。記載したsource情報だけが既知である。</p>
+<h3 id="s21-21-5">21.5 更新</h3>
+<p>host API、plugin package、Effect、main/Jev model、Warden policyを別々に版付けする。自動dependency updateの直後に過去policyが同じ意味で動くと仮定しない。代表回帰とcompatibility testを通し、必要なら観測のみへ戻す。</p>
+<p><a id="s22"></a></p>
+<h2>22. 性能・費用・有用性の指標</h2>
+<h3 id="s22-22-1">22.1 測定対象</h3>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>層</th>
+<th>指標</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Probe</td>
+<td>入力取得、queue待ち、Jev RTT、token数、batch幅、直列段数、schema error</td>
+</tr>
+<tr>
+<td>Host</td>
+<td>hookの追加遅延、cancelまでの時間、setup/cleanup、tool結果保存の影響</td>
+</tr>
+<tr>
+<td>Guidance</td>
+<td>注入tokens、通知件数、重複率、古い結果の破棄、採用された参照</td>
+</tr>
+<tr>
+<td>Evidence</td>
+<td>capture gap、stale receipt、unknown outcome、source取得成功</td>
+</tr>
+<tr>
+<td>Task</td>
+<td>成果の正しさ、完了時間、再試行、手戻り、ユーザー訂正</td>
+</tr>
+<tr>
+<td>Lab</td>
+<td>候補数、評価待ち、E2E費用、昇格/退役、auditでの悪化</td>
+</tr>
+<tr>
+<td>UI/RPC</td>
+<td>reconnect、delta追従、表示欠落、client数に対する重複処理</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s22-22-2">22.2 予算は別々に見る</h3>
+<p>Jevが安いから主モデルへ大量contextを注入してよい、とはしない。Jevの観測数とmain model cost、長いE2Eの費用は別に管理する。</p>
+<p>複数の独立した候補を一気に評価する余地を残し、最初から少数questionへ絞りすぎない。冷接続/温接続、少数/多数質問、日本語/英語、単一/複数session、remote/localで実測する。</p>
+<h3 id="s22-22-3">22.3 正しさと介入効果</h3>
+<p>Noul等の校正は正解が定義できる領域で測る。Brier/ECEや順位指標を採用する場合も、taskへの有用性とは別に報告する。質問の意味やlabelが変わった値を同じ曲線として結ばない。</p>
+<p>同じsession内の多数callを独立標本として水増しせず、task/session/project単位で比較する。注入の有無は対照armで記録し、観測後に都合よく主指標を選び直さない。</p>
+<h3 id="s22-22-4">22.4 目標値の確定</h3>
+<p>deadline、batch上限、queue枠、通知上限、監査率、minimum evaluation volumeは初期実測で確定する。本書は未実測の数値をSLAにしない。付録JSONの数値は説明用設定であり、性能・安全性を保証する推奨値ではない。</p>
+<p><a id="s23"></a></p>
+<h2>23. 受入試験・障害注入・検証マトリクス</h2>
+<h3 id="s23-23-1">23.1 四つのテスト層</h3>
+<p><strong>Pure Core</strong>ではpermission非弱化、scope/版照合、policy pin、通知dedup、queue状態を決定的に検査する。</p>
+<p><strong>Host conformance</strong>では実OpenCodeへpluginをloadし、型だけでは分からない順序・寿命・取消・権限・registry挙動を検査する。</p>
+<p><strong>Semantic evaluation</strong>では実Jevで情報不足、spec grounding、test拘束、反証、言語差を測る。</p>
+<p><strong>Controlled E2E</strong>では主モデルが固定作業を解く成果を旧版・候補版・無介入で比べる。</p>
+<p>一つの層の成功を別の層の検証と称さない。本書に同梱するtestは第一層の小さな参照例のみ。</p>
+<h3 id="s23-23-2">23.2 必須ケース</h3>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>群</th>
+<th>主なケース</th>
+<th>合格条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prompt</td>
+<td>再送、複数plugin、元入力、Skill解決順序</td>
+<td>元の意思を偽造せず追加は冪等</td>
+</tr>
+<tr>
+<td>Context</td>
+<td>retry、auxiliary、compaction、tool pair</td>
+<td>role/履歴整合を保ち一回分の補助だけ</td>
+</tr>
+<tr>
+<td>Tool</td>
+<td>completed/error、before失敗、cancel、after欠落</td>
+<td>元結果を保持しunknownを正常に表す</td>
+</tr>
+<tr>
+<td>Permission</td>
+<td>deny/ask、前後順序、input変更、別plugin</td>
+<td>Wardenが非弱化、全体未保証を検知</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>同名session別server、location移動、子agent</td>
+<td>違うscopeの資料と介入を混ぜない</td>
+</tr>
+<tr>
+<td>Jev</td>
+<td>429、timeout、無効JSON、異常分布、遅延結果</td>
+<td>未評価をpassにせずstaleを適用しない</td>
+</tr>
+<tr>
+<td>RPC</td>
+<td>切断、重複、逆順、snapshot race、epoch変化</td>
+<td>durable stateから一貫して復旧</td>
+</tr>
+<tr>
+<td>Policy</td>
+<td>v12/v13共存、global reload、緊急失効</td>
+<td>pinを保ち互換性を確認</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>crash前後、ack喪失、disk full、削除</td>
+<td>耐久性低下とgapを明示</td>
+</tr>
+<tr>
+<td>Experiment</td>
+<td>dirty overlay、key混入、unknown mutation</td>
+<td>隔離し無条件再実行しない</td>
+</tr>
+<tr>
+<td>Learning</td>
+<td>hindsight leakage、同族fixture、無介入監査</td>
+<td>独立性と原時点を保持</td>
+</tr>
+<tr>
+<td>TUI</td>
+<td>二台接続、client切替、headless、slot競合</td>
+<td>二重推論せずscopeを保持</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s23-23-3">23.3 初版の最重要シナリオ</h3>
+<p>EXPECTED_CALLS未提示の例について、誤った確信→定義取得→反証→episode→候補生成→旧版比較→shadow→有限の作業比較→採用/保留までを、一度人間が有効化した範囲で通す。</p>
+<p><strong>「テストで必要な定義を読み取れるようになった」だけでは、介入が有益になった証明ではない。</strong> 定義取得が元々予定されていたケースや、追加取得が無駄になるケースも含める。</p>
+<h3 id="s23-23-4">23.4 検証結果の表示</h3>
+<p>passed、failed、not_run、blockedを区別する。記録には何の型を何の環境で検査したかを残す。偽のhost宣言に対してtscが通った状態を、実plugin互換として表示しない。</p>
+<p>全caseの機械可読一覧は<code>appendix/acceptance-matrix.json</code>に置く。実機試験のstatusは初期値<code>NOT_RUN</code>である。</p>
+<p><a id="s24"></a></p>
+<h2>24. 実装ロードマップ：まず「育つ一本」を通す</h2>
+<h3 id="s24-24-1">24.1 Phase 0 — 契約を測るspike</h3>
+<p>空のserver plugin、最小TUI、単一sessionのevent観測とcontext補助を作る。対象releaseをpinし、doctorで登録順、scope、permission、取消、RPC、storageを確認する。必要ならPromise版で接続を確かめてからEffectへ寄せてもよい。</p>
+<p>合格：元のOpenCode処理を壊さず、event→一件の判断→適切な補助/表示が一往復する。未確認機能を明記できる。</p>
+<h3 id="s24-24-2">24.2 Phase 1 — 証拠基盤と普段使いの観測</h3>
+<p>EventEnvelope、EvidenceRef、VerificationReceipt、policy pin、Lab outbox、単一controller、TUI集計を実装する。Jevはsupport/grounding/coverageを観測だけする。ユーザーのファイルを書き換えず、context注入は限定する。</p>
+<p>合格：再起動・複数session・切断を越えて、後から再評価できる材料が溜まる。</p>
+<h3 id="s24-24-3">24.3 Phase 2 — 不足する根拠を取得する</h3>
+<p>specific sufficiency、definition/caller/spec検索、許可済みsource read、再判定を結ぶ。結果を支持・反証・保留へ分け、次の観測候補を返す。</p>
+<p>合格：主張をただ警告するのでなく、一つの不確実性を解消し、由来付きの結果を保存できる。</p>
+<h3 id="s24-24-4">24.4 Phase 3 — Labの改善候補を自動生成する</h3>
+<p>resolved findingからEpisode、対照fixture、失敗族、CandidateBundleを自動作成する。固定契約とreplay比較を行い、shadow評価まで回す。</p>
+<p>合格：手動でpromptを修正しなくても、質問・入力構築・助言の候補と比較結果が生まれる。</p>
+<h3 id="s24-24-5">24.5 Phase 4 — 自動採用と撤回</h3>
+<p>独立した作業評価、canary、固定promoter、active pointer、session別適用、rollback、悪化影響の追跡を実装する。</p>
+<p>合格：良い候補を次sessionへ反映し、悪い候補を退役させ、停止後もjobを再開できる。評価不足なら保留できる。</p>
+<h3 id="s24-24-6">24.6 Phase 5 — 領域を広げる</h3>
+<p>Skill推薦、反証検索、仕様の仮決定記録、verification planner、仮説比較、手順再利用を同じ経験・評価経路へ乗せる。個別機能ごとの独立した自己採点loopを作らない。</p>
+<h3 id="s24-24-7">24.7 優先順位</h3>
+<p>Skill Suggestionは短い統合demoとして優秀だが、最初の自己改善対象をそれだけに変えない。中核の価値は「根拠不足を発見・補完し、その経験が次回の助け方を変える」ことである。</p>
+<p>全候補の常時最適化、任意コード自己改変、global tool topology変更、凝ったUI、他host完全互換は後回し。原文・版・認可・当時の入力だけは最初から保存する。</p>
+<p><a id="s25"></a></p>
+<h2>25. 実装調整役への引継ぎ</h2>
+<h3 id="s25-25-1">25.1 着手時の指示</h3>
+<p>この文書とv0.2を読み、現在のrepository・CLI・依存を正本としてdoctorから始める。宣言済み、docs記載、実機確認済みの三つを区別する。新旧OpenCode APIの例を混ぜず、使えないAPIを私有実装へ潜って代替しない。</p>
+<p>実装は設計を全部一度に作るのではなく、Phase 0→1→2を優先する。ただしEvidence/Episodeの原時点とpolicy版を省略して、後から学習を付ける計画にしない。</p>
+<h3 id="s25-25-2">25.2 作業分担</h3>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>担当</th>
+<th>出力</th>
+<th>依存</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API/adapter</td>
+<td>固定型、適合fixture、server/TUI入口</td>
+<td>対象release</td>
+</tr>
+<tr>
+<td>Core/evidence</td>
+<td>純粋契約、scope/pin/receipt、unit tests</td>
+<td>最小EventEnvelope</td>
+</tr>
+<tr>
+<td>Jev/retrieval</td>
+<td>入力構築、fan-out、specific sufficiency、probe fixtures</td>
+<td>証拠port</td>
+</tr>
+<tr>
+<td>Lab/eval</td>
+<td>outbox/jobs/Episode、比較、candidate</td>
+<td>契約と固定評価方針</td>
+</tr>
+<tr>
+<td>TUI</td>
+<td>projection、再接続、説明、停止操作</td>
+<td>読み取りRPC</td>
+</tr>
+</tbody>
+</table></div>
+<p>共有型の所有者を一つにし、並行作業で各自が別のscope/policy schemaを発明しない。最初のschema変更はレビューとmigrationを伴う。</p>
+<h3 id="s25-25-3">25.3 完了報告に必要なもの</h3>
+<p>変更ファイル、固定したhost/package/schema版、実行したテスト、未実施のhost/Jev/E2E、実際に送った資料範囲、未解決の契約、縮退時の動作を報告する。実施していないAPI呼出、worker稼働、精度評価を補完しない。</p>
+<p>ユーザーの指示なしにrepository作成、commit、push、公開、API課金、実ユーザーデータの送信をしない。本書作成はそれらの実施を意味しない。実際の実装タスクで別途与えられた明示的な権限は、その範囲で使用する。</p>
+<h3 id="s25-25-4">25.4 最初のPR相当の範囲</h3>
+<p>実装環境が与えられた時の最初の変更単位は、plugin skeleton、doctor、純粋Coreのpermission/scope/pin、dummy transport、最小statusだけにする。次に実Jevの一件を接続し、最後に証拠取得を加える。巨大なrefactorと一緒に入れない。</p>
+<p>コピー用の独立した引継ぎ文は<code>appendix/implementation-brief.md</code>に同梱する。</p>
+<p><a id="s26"></a></p>
+<h2>26. 設計判断・未決事項・Claude Mods版との差分</h2>
+<h3 id="s26-26-1">26.1 ADR</h3>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>判断</th>
+<th>根拠・帰結</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ADR-01</td>
+<td>OpenCode 2は第一級adapter</td>
+<td>Core/Labを共有し、最小互換へ機能を潰さない</td>
+</tr>
+<tr>
+<td>ADR-02</td>
+<td>Effect server + 別TUI</td>
+<td>online処理のscopeと表示client寿命を分ける</td>
+</tr>
+<tr>
+<td>ADR-03</td>
+<td>固定commitをbaseline</td>
+<td>docsの新旧混在を避ける。実releaseはdoctorで決める</td>
+</tr>
+<tr>
+<td>ADR-04</td>
+<td>原prompt不変、contextで補助</td>
+<td>意思の出所を保ち、scope内の一時助言に限定</td>
+</tr>
+<tr>
+<td>ADR-05</td>
+<td>安定wrapper + session pin</td>
+<td>registry reloadをpolicy deployと同一視しない</td>
+</tr>
+<tr>
+<td>ADR-06</td>
+<td>通知ではなくLabが正本</td>
+<td>RPC切断でも再構成できる</td>
+</tr>
+<tr>
+<td>ADR-07</td>
+<td>permissionは非弱化</td>
+<td>学習による権限拡大をしない</td>
+</tr>
+<tr>
+<td>ADR-08</td>
+<td>worktreeとsandboxを分離</td>
+<td>dirty snapshot再現とOS隔離を別契約にする</td>
+</tr>
+<tr>
+<td>ADR-09</td>
+<td>初版から閉ループ</td>
+<td>後付けの自己改善で原時点を失わない</td>
+</tr>
+<tr>
+<td>ADR-10</td>
+<td>評価器をoptimizerから分離</td>
+<td>自己採点・権限改変・評価漏洩を防ぐ</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s26-26-2">26.2 実機で決めること</h3>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>未決定事項</th>
+<th>必要な確認</th>
+<th>未確認時の動作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>release/package整合</td>
+<td>実CLIと型・lockfile・exports</td>
+<td>install手順を確定しない</td>
+</tr>
+<tr>
+<td>promptとskill resolution</td>
+<td>順序、canonical保存、再試行</td>
+<td>recommend_only</td>
+</tr>
+<tr>
+<td>permission最終順序</td>
+<td>deny短絡、before mutation、他plugin</td>
+<td>非弱化を守り全体保証を主張しない</td>
+</tr>
+<tr>
+<td>execution events</td>
+<td>公開unionとpayload、親子・interrupt</td>
+<td>内部sequence＋capture gap</td>
+</tr>
+<tr>
+<td>contextの永続性</td>
+<td>履歴readback、retry、compaction</td>
+<td>最小追記、履歴編集なし</td>
+</tr>
+<tr>
+<td>RPC identity</td>
+<td>caller認証、location filter、取消</td>
+<td>read-only、管理はLab別経路</td>
+</tr>
+<tr>
+<td>registry scope</td>
+<td>location/session共有とread時点</td>
+<td>stable wrapper、reload最小化</td>
+</tr>
+<tr>
+<td>TUI load設定</td>
+<td>現バイナリの設定とexport</td>
+<td>server/CLIだけで動作</td>
+</tr>
+<tr>
+<td>worktree入力</td>
+<td>dirty overlay、remote path、ownership</td>
+<td>実験を保留または外部executor</td>
+</tr>
+<tr>
+<td>generationの契約</td>
+<td>schema、tools、history、usage、cancel</td>
+<td>独立adapterに限定</td>
+</tr>
+<tr>
+<td>OS/runtime</td>
+<td>Node/Bun/Windows互換、SQLite</td>
+<td>Coreは維持しadapterを縮退</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s26-26-3">26.3 Claude Modsとの差分</h3>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>論点</th>
+<th>Claude Mods版</th>
+<th>OpenCode 2版</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>拡張の形</td>
+<td><code>($, e, next)</code>でchainを包む</td>
+<td>domainごとのruntime hook/transform</td>
+</tr>
+<tr>
+<td>Coreの配置</td>
+<td>host管理下、Node/DOMなしの前提</td>
+<td>server plugin内、runtime依存はadapterへ</td>
+</tr>
+<tr>
+<td>before/after</td>
+<td>一つのcontinuationで対応</td>
+<td><code>id</code>等で別hookを相関</td>
+</tr>
+<tr>
+<td>模型入力への補助</td>
+<td>使用可能なeventを型で確認</td>
+<td>context/compactionを主接点</td>
+</tr>
+<tr>
+<td>UI</td>
+<td>Modのpane/render</td>
+<td>別TUI pluginとRPC projection</td>
+</tr>
+<tr>
+<td>共有状態</td>
+<td>storeと外部Lab</td>
+<td>plugin storageと外部Lab、二重正本にしない</td>
+</tr>
+<tr>
+<td>registry</td>
+<td>host/noun等の能力</td>
+<td>domain transform/reload、global影響に注意</td>
+</tr>
+<tr>
+<td>テスト</td>
+<td>native mod testの利用候補</td>
+<td>固定OpenCodeの適合harnessを用意</td>
+</tr>
+<tr>
+<td>長期学習</td>
+<td>外部Lab</td>
+<td>外部Labを共通利用</td>
+</tr>
+</tbody>
+</table></div>
+<p>比較は全体の優劣ではなく、adapterが守る境界の違いである。自己改善の成果を他hostへ移す場合は、host別評価を行ってから適用する。</p>
+<p><a id="s27"></a></p>
+<h2>27. 参照資料・確認記録</h2>
+<p>本文の[OCxx]は固定commitの一次ソース、[Dxx]は可変docs、[Jxx]はJev共通設計の参考、<a href="reference/jev-warden-complete-design-v0.2.md">W0</a>は会話で作成した設計上の正本である。ソースの型を読んだことと、対象のruntimeで契約を検証したことは分けている。</p>
+<p>設計時点のsource catalogを<code>reference/sources.json</code>にも保存する。commit/source package版は再現可能な調査基準であり、最新版や公開packageのinstall可能性を保証するための値ではない。</p>
+<p>付録の検査記録は、この資料生成時に実際に行ったoffline検査のみを含む。OpenCode/Jev/remote/学習運用をpassとして記録しない。</p>
+<p><a id="appendix-a"></a></p>
+<h2>付録A. 内部契約例と検査方法</h2>
+<p><code>appendix/core-contracts.ts</code>は純粋なWarden内部契約の参照例である。permission非弱化、scope・snapshot・policyの適用確認、session pin、tool終端のunknown扱い、観測再帰の抑止を含む。OpenCodeの型を模した偽のmodule宣言は使っていない。</p>
+<pre><code class="language-ts">// 独自Coreの形状例。実OpenCode APIではない。
+type NativeEffect = "allow" | "ask" | "deny";
+type WardenDecision = "abstain" | "ask_permission" | "deny_by_rule";
+
+// 元effectと固定方針から合成する。モデルのconfidenceは引数にしない。
+</code></pre>
+<p>検査手順（TypeScript compilerとNodeが利用可能な環境）：</p>
+<pre><code class="language-bash">tsc -p appendix/tsconfig.json
+node --test appendix/core-contracts.test.mjs
+</code></pre>
+<p>これは例の局所的性質を確かめるもので、全プログラムの安全性・host互換性・Jev品質の証明ではない。検査ログは<code>checks/</code>にある。実機の試験項目は<code>appendix/acceptance-matrix.json</code>を使って別に実施する。</p>
+<p><a id="appendix-b"></a></p>
+<h2>付録B. 設定・policy・doctorの例</h2>
+<p><code>appendix/opencode.config.example.json</code>はserver pluginのlocal entryを指定する参考例。パスに対応するPluginはこの資料に実装されていない。実際の設定場所・merge・entrypointは対象版で検証する。既存設定を丸ごと上書きせず、明示的にmergeする。</p>
+<p><code>appendix/warden.policy.example.json</code>はadvisoryな質問・証拠selector・通知設定の例。grant、固定採用基準、API keyは含めない。candidateはデータとして検証され、任意のJS・shell・importを持てない。</p>
+<p><code>appendix/doctor.example.json</code>はsource baselineと<code>NOT_RUN</code>なruntime試験を示す。確認していないCLI versionやfeature availabilityはnull/unknownのままにする。記入済みのsource package2.0.7を、インストール済みバイナリ版にコピーしない。</p>
+<p><code>appendix/implementation-brief.md</code>は調整役へ単独で渡せる着手指示。共通Core、server/TUI、Lab、固定Kernelの境界を維持し、Phase 0の実測から始める。</p>
+<p><a id="appendix-c"></a></p>
+<h2>付録C. 障害時runbook</h2>
+<div aria-label="横スクロール可能な表" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>症状</th>
+<th>即時動作</th>
+<th>復旧と記録</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Jevがtimeout/429</td>
+<td>助言を遅延または未評価にする。native処理を保つ</td>
+<td>期限内retry、budget unknownを照合</td>
+</tr>
+<tr>
+<td>回答がschema不正</td>
+<td>当該結果を使わない</td>
+<td>rawは許可範囲で保存、provider/adapterを切り分け</td>
+</tr>
+<tr>
+<td>Labが停止</td>
+<td>bounded spool、学習停止、durability低下表示</td>
+<td>再接続後IDで再送、ack回収</td>
+</tr>
+<tr>
+<td>RPC通知が欠落</td>
+<td>最終状態を正しいと断定しない</td>
+<td>snapshot/deltaで同期</td>
+</tr>
+<tr>
+<td>scopeが解決しない</td>
+<td>原資料の送信・自動実行を保留</td>
+<td>session/location公開情報を再取得</td>
+</tr>
+<tr>
+<td>host更新でhook不整合</td>
+<td>該当機能だけ無効化</td>
+<td>型digest・適合試験を更新</td>
+</tr>
+<tr>
+<td>policy不適合</td>
+<td>旧pinまたは観測のみ</td>
+<td>無検証の新bundleへfallbackしない</td>
+</tr>
+<tr>
+<td>tool取消後に結果不明</td>
+<td>unknownで記録</td>
+<td>実行状況を照合してから再試行</td>
+</tr>
+<tr>
+<td>実験worktreeが残った</td>
+<td>他の領域を削除しない</td>
+<td>所有manifestとjob状態を検査してcleanup</td>
+</tr>
+<tr>
+<td>semantic警告が多すぎる</td>
+<td>観測を残し通知を絞る</td>
+<td>誤検知・介入価値を別評価</td>
+</tr>
+<tr>
+<td>悪化版の採用</td>
+<td>bundle失効、pointerを戻す</td>
+<td>影響sessionと成果物へ再確認</td>
+</tr>
+<tr>
+<td>データ許可の撤回</td>
+<td>新規送信停止、pending取消</td>
+<td>cache/episode/candidate依存を追跡</td>
+</tr>
+</tbody>
+</table></div>
+<p>主作業のtoolエラーとWardenのadvisoryエラーを混ぜない。どの機能が使えず、どこまで観測できているかをstatusから確認できるようにする。</p>
+<p><a id="appendix-d"></a></p>
+<h2>付録D. 最初の一本の時系列</h2>
+<p>以下は架空のシナリオであり、実施済みの計測結果ではない。</p>
+<ol>
+<li>session Sがpolicy P12とsnapshot X1で開始する。</li>
+<li>主モデルが「テストは合計2回を検証」と報告する。Wardenはtestが定数を参照し、定義がstateにないことを観測する。</li>
+<li>finding Fを作り、許可されたdefinition検索でsource Dを取得する。</li>
+<li>Dの実値は3。主張の訂正または意味の再確認を促し、原文を根拠としてFへ紐付ける。</li>
+<li>Labは当時の入力と後続のDを別々に持つEpisodeを作る。</li>
+<li>定義収集とspecific questionを改善するP13候補を生成する。独立したfixture群でも誤誘導・欠落を調べる。</li>
+<li>replayとshadowだけで勝者とせず、固定作業をP12/P13/無介入で比較する。</li>
+<li>固定基準を満たせばP13をactiveにする。SはP12のまま、新sessionへP13をpinする。</li>
+<li>TUIが切断していても、再接続後にLab sequenceからこの経過を回収する。</li>
+<li>P13が別のtask族で悪化したらscopeを狭めるか退役させる。改善しない結論も正常な学習結果である。</li>
+</ol>
+<p>この一本が閉じれば、仕様grounding・test justification・反証探索等を、同じ証拠・経験・採用の仕組みに追加できる。</p>
+<h3 id="appendix-d-125">出典一覧</h3>
+<ul>
+<li>
+<p><strong>W0 — Jev Warden 統合設計書 v0.2</strong><br/>
+<a href="reference/jev-warden-complete-design-v0.2.md">Jev Warden 統合設計書 v0.2</a><br/>
+会話添付の既存設計。外部製品の仕様ではなく設計上の正本。</p>
+</li>
+<li>
+<p><strong>OC01 — OpenCode v2 branch の調査時点</strong><br/>
+<a href="https://github.com/anomalyco/opencode/commit/a2594ddefb6557ecf7e7edb3e30ea50c71df8519" rel="noopener noreferrer" target="_blank">OpenCode v2 branch の調査時点</a><br/>
+2026-09-17T19:54:34Z のcommitを調査baselineとして固定。latestや安定版とは主張しない。</p>
+</li>
+<li>
+<p><strong>OC02 — Plugin package manifest</strong><br/>
+<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/package.json" rel="noopener noreferrer" target="_blank">Plugin package manifest</a><br/>
+ソース内のnameは @opencode/plugin、versionは2.0.7。配布済みCLI／npm版の確認ではない。</p>
+</li>
+<li>
+<p><strong>OC03 — Promise Plugin API README</strong><br/>
+<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/README.md" rel="noopener noreferrer" target="_blank">Promise Plugin API README</a><br/>
+setup/cleanup、同期transform、context hook、reload、完全なtool値の登録を確認。</p>
+</li>
+<li>
+<p><strong>OC04 — Effect Plugin API README</strong><br/>
+<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/README.md" rel="noopener noreferrer" target="_blank">Effect Plugin API README</a><br/>
+scopeによる登録解除、hookの順序、registry再構築、既存snapshotの非変更を確認。</p>
+</li>
+<li>
+<p><strong>OC05 — Effect Plugin Context / Definition</strong><br/>
+<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/plugin.ts" rel="noopener noreferrer" target="_blank">Effect Plugin Context / Definition</a><br/>
+effect入口、公開domain型、Scope型を確認。</p>
+</li>
+<li>
+<p><strong>OC06 — Session hook 型</strong><br/>
+<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts" rel="noopener noreferrer" target="_blank">Session hook 型</a><br/>
+prompt/context/compaction等の入力と変更可能項目、request kind、session methodsを確認。</p>
+</li>
+<li>
+<p><strong>OC07 — Tool hook / registry 型</strong><br/>
+<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/tool.ts" rel="noopener noreferrer" target="_blank">Tool hook / registry 型</a><br/>
+before/after、id=Tool.CallID、completed/errorのunion、beforeのみ型付き失敗を確認。</p>
+</li>
+<li>
+<p><strong>OC08 — Permission hook 型</strong><br/>
+<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/permission.ts" rel="noopener noreferrer" target="_blank">Permission hook 型</a><br/>
+effect/messageとreadonlyな評価情報を確認。最終権限順序はこの型だけでは確定しない。</p>
+</li>
+<li>
+<p><strong>OC09 — RPC Effect domain 型</strong><br/>
+<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/rpc.ts" rel="noopener noreferrer" target="_blank">RPC Effect domain 型</a><br/>
+register/emitとScope、handler contextのerrorを確認。caller identityの保証ではない。</p>
+</li>
+<li>
+<p><strong>OC10 — Worktree domain 型</strong><br/>
+<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/worktree.ts" rel="noopener noreferrer" target="_blank">Worktree domain 型</a><br/>
+WorktreeApi継承、provider transform/reloadを確認。OS隔離の保証ではない。</p>
+</li>
+<li>
+<p><strong>OC11 — TUI plugin 入口</strong><br/>
+<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/index.ts" rel="noopener noreferrer" target="_blank">TUI plugin 入口</a><br/>
+@opencode/plugin/tui側の公開入口を確認。</p>
+</li>
+<li>
+<p><strong>OC12 — TUI plugin 定義</strong><br/>
+<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/plugin.ts" rel="noopener noreferrer" target="_blank">TUI plugin 定義</a><br/>
+setupとcleanupを確認。</p>
+</li>
+<li>
+<p><strong>OC13 — TUI Context 型</strong><br/>
+<a href="https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/context.ts" rel="noopener noreferrer" target="_blank">TUI Context 型</a><br/>
+storage、data、location、slot、panel、router、dialog等の必要範囲を確認。全文を実機検証した意味ではない。</p>
+</li>
+<li>
+<p><strong>D01 — OpenCode V2 Plugins（可変docs）</strong><br/>
+<a href="https://opencode.ai/v2/docs/build/plugins" rel="noopener noreferrer" target="_blank">OpenCode V2 Plugins（可変docs）</a><br/>
+調査中に新旧表記の異なる取得結果があった。最終取得は旧 @opencode-ai/plugin / catalog 表記。固定ソースを優先。</p>
+</li>
+<li>
+<p><strong>D02 — OpenCode V2 Effect plugins（可変docs）</strong><br/>
+<a href="https://opencode.ai/v2/docs/build/plugins/effect" rel="noopener noreferrer" target="_blank">OpenCode V2 Effect plugins（可変docs）</a><br/>
+補助的な説明を確認。公開ソースのOC04/OC05を契約baselineとする。</p>
+</li>
+<li>
+<p><strong>D03 — OpenCode V2 Plugin RPC（可変docs）</strong><br/>
+<a href="https://opencode.ai/v2/docs/build/plugins/rpc" rel="noopener noreferrer" target="_blank">OpenCode V2 Plugin RPC（可変docs）</a><br/>
+調査中にlive-only通知・location・外部clientの説明を確認。後続再取得はcache miss。耐久性・認証は実機試験。</p>
+</li>
+<li>
+<p><strong>D04 — OpenCode V2 CLI/TUI plugin docs</strong><br/>
+<a href="https://opencode.ai/v2/docs/build/plugins/cli" rel="noopener noreferrer" target="_blank">OpenCode V2 CLI/TUI plugin docs</a><br/>
+今回の本文取得は失敗。TUIは固定ソースOC11〜OC13を参照し、導入設定を未確認とする。</p>
+</li>
+<li>
+<p><strong>J01 — TypeSafe primitives</strong><br/>
+<a href="https://docs.typesafe.ai/primitives" rel="noopener noreferrer" target="_blank">TypeSafe primitives</a><br/>
+Jev共通設計の参考。今回の実API評価はなし。</p>
+</li>
+<li>
+<p><strong>J02 — TypeSafe speculative fan-out</strong><br/>
+<a href="https://docs.typesafe.ai/patterns/fan-out" rel="noopener noreferrer" target="_blank">TypeSafe speculative fan-out</a><br/>
+独立質問の投機的な同時評価。性能数値の保証には用いない。</p>
+</li>
+<li>
+<p><strong>J03 — TypeSafe Skill suggestion cookbook</strong><br/>
+<a href="https://docs.typesafe.ai/cookbooks/skill_suggestion" rel="noopener noreferrer" target="_blank">TypeSafe Skill suggestion cookbook</a><br/>
+既存設計から継承する参考。今回の再取得は失敗。bench数値は転載しない。</p>
+</li>
+<li>
+<p><strong>J04 — TypeSafe Autoresearch feature discovery</strong><br/>
+<a href="https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery" rel="noopener noreferrer" target="_blank">TypeSafe Autoresearch feature discovery</a><br/>
+既存設計から継承する参考。今回の再取得は失敗。Wardenの有効性を証明するものではない。</p>
+</li>
+<li>
+<p><strong>J05 — TypeSafe Confidence</strong><br/>
+<a href="https://docs.typesafe.ai/confidence" rel="noopener noreferrer" target="_blank">TypeSafe Confidence</a><br/>
+確率とconfidenceの区別の参考。今回の言語性能・校正は未評価。</p>
+</li>
+</ul>
+</article></main><footer class="footer"><span>Jev Warden / OpenCode 2 · OC2-0.1</span><span>外部ライブラリ・外部フォント・解析タグを読み込まない閲覧版</span></footer></div><script>
+(()=>{const progress=document.querySelector('.progress span');const refresh=()=>{const d=document.documentElement;const range=d.scrollHeight-innerHeight;progress.style.width=(range>0?scrollY/range*100:0)+'%'};addEventListener('scroll',refresh,{passive:true});addEventListener('resize',refresh);refresh();
+const links=[...document.querySelectorAll('.sidebar a[href^="#"]')];const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting){links.forEach(a=>a.classList.toggle('current',a.hash==='#'+entry.target.id));}}},{rootMargin:'0px 0px -82% 0px'});document.querySelectorAll('.article a[id]').forEach(a=>observer.observe(a));
+document.querySelectorAll('.mobile-nav a').forEach(a=>a.addEventListener('click',()=>{document.querySelector('.mobile-nav').open=false}));
+})();
+</script></body></html>

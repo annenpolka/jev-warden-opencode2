@@ -1,0 +1,262 @@
+TAP version 13
+# Subtest: permission never weakens allow with abstain
+ok 1 - permission never weakens allow with abstain
+  ---
+  duration_ms: 1.105369
+  type: 'test'
+  ...
+# Subtest: permission never weakens allow with ask_permission
+ok 2 - permission never weakens allow with ask_permission
+  ---
+  duration_ms: 0.169095
+  type: 'test'
+  ...
+# Subtest: permission never weakens allow with deny_by_rule
+ok 3 - permission never weakens allow with deny_by_rule
+  ---
+  duration_ms: 0.068113
+  type: 'test'
+  ...
+# Subtest: permission never weakens ask with abstain
+ok 4 - permission never weakens ask with abstain
+  ---
+  duration_ms: 0.066331
+  type: 'test'
+  ...
+# Subtest: permission never weakens ask with ask_permission
+ok 5 - permission never weakens ask with ask_permission
+  ---
+  duration_ms: 0.06614
+  type: 'test'
+  ...
+# Subtest: permission never weakens ask with deny_by_rule
+ok 6 - permission never weakens ask with deny_by_rule
+  ---
+  duration_ms: 0.070287
+  type: 'test'
+  ...
+# Subtest: permission never weakens deny with abstain
+ok 7 - permission never weakens deny with abstain
+  ---
+  duration_ms: 0.153922
+  type: 'test'
+  ...
+# Subtest: permission never weakens deny with ask_permission
+ok 8 - permission never weakens deny with ask_permission
+  ---
+  duration_ms: 0.057437
+  type: 'test'
+  ...
+# Subtest: permission never weakens deny with deny_by_rule
+ok 9 - permission never weakens deny with deny_by_rule
+  ---
+  duration_ms: 0.213362
+  type: 'test'
+  ...
+# Subtest: unknown permission value rejected, not mapped to allow
+ok 10 - unknown permission value rejected, not mapped to allow
+  ---
+  duration_ms: 0.687368
+  type: 'test'
+  ...
+# Subtest: unknown kernel decision rejected
+ok 11 - unknown kernel decision rejected
+  ---
+  duration_ms: 0.174804
+  type: 'test'
+  ...
+# Subtest: rule-based decision requires a rule reference
+ok 12 - rule-based decision requires a rule reference
+  ---
+  duration_ms: 0.138429
+  type: 'test'
+  ...
+# Subtest: identical observations are applicable, not thereby proved true
+ok 13 - identical observations are applicable, not thereby proved true
+  ---
+  duration_ms: 0.626756
+  type: 'test'
+  ...
+# Subtest: observation rejects different serverId
+ok 14 - observation rejects different serverId
+  ---
+  duration_ms: 0.113201
+  type: 'test'
+  ...
+# Subtest: observation rejects different serverEpoch
+ok 15 - observation rejects different serverEpoch
+  ---
+  duration_ms: 0.127492
+  type: 'test'
+  ...
+# Subtest: observation rejects different locationId
+ok 16 - observation rejects different locationId
+  ---
+  duration_ms: 0.098879
+  type: 'test'
+  ...
+# Subtest: observation rejects different projectId
+ok 17 - observation rejects different projectId
+  ---
+  duration_ms: 0.048404
+  type: 'test'
+  ...
+# Subtest: observation rejects different worktreeId
+ok 18 - observation rejects different worktreeId
+  ---
+  duration_ms: 0.043276
+  type: 'test'
+  ...
+# Subtest: observation rejects different sessionId
+ok 19 - observation rejects different sessionId
+  ---
+  duration_ms: 0.088684
+  type: 'test'
+  ...
+# Subtest: observation rejects different agentId
+ok 20 - observation rejects different agentId
+  ---
+  duration_ms: 0.051378
+  type: 'test'
+  ...
+# Subtest: stale snapshot rejected
+ok 21 - stale snapshot rejected
+  ---
+  duration_ms: 0.115775
+  type: 'test'
+  ...
+# Subtest: candidate policy result cannot enter pinned session
+ok 22 - candidate policy result cannot enter pinned session
+  ---
+  duration_ms: 0.078378
+  type: 'test'
+  ...
+# Subtest: cancelled result cannot be applied
+ok 23 - cancelled result cannot be applied
+  ---
+  duration_ms: 0.061583
+  type: 'test'
+  ...
+# Subtest: superseded result cannot be applied
+ok 24 - superseded result cannot be applied
+  ---
+  duration_ms: 0.039039
+  type: 'test'
+  ...
+# Subtest: unavailable result cannot be applied
+ok 25 - unavailable result cannot be applied
+  ---
+  duration_ms: 0.042814
+  type: 'test'
+  ...
+# Subtest: invalid_response result cannot be applied
+ok 26 - invalid_response result cannot be applied
+  ---
+  duration_ms: 0.058959
+  type: 'test'
+  ...
+# Subtest: budget_exhausted result cannot be applied
+ok 27 - budget_exhausted result cannot be applied
+  ---
+  duration_ms: 0.036455
+  type: 'test'
+  ...
+# Subtest: missing required evidence defeats a completed observation
+ok 28 - missing required evidence defeats a completed observation
+  ---
+  duration_ms: 0.113432
+  type: 'test'
+  ...
+# Subtest: unknown required evidence defeats a completed observation
+ok 29 - unknown required evidence defeats a completed observation
+  ---
+  duration_ms: 0.045869
+  type: 'test'
+  ...
+# Subtest: blank scope is rejected before storage or delivery
+ok 30 - blank scope is rejected before storage or delivery
+  ---
+  duration_ms: 0.088604
+  type: 'test'
+  ...
+# Subtest: existing session remains pinned after active pointer update
+ok 31 - existing session remains pinned after active pointer update
+  ---
+  duration_ms: 0.169846
+  type: 'test'
+  ...
+# Subtest: agents in the same session share a pin without changing observation scopes
+ok 32 - agents in the same session share a pin without changing observation scopes
+  ---
+  duration_ms: 0.085269
+  type: 'test'
+  ...
+# Subtest: revocation is explicit and does not silently select a new policy
+ok 33 - revocation is explicit and does not silently select a new policy
+  ---
+  duration_ms: 0.100372
+  type: 'test'
+  ...
+# Subtest: stored pin copies and freezes caller scope
+ok 34 - stored pin copies and freezes caller scope
+  ---
+  duration_ms: 0.072149
+  type: 'test'
+  ...
+# Subtest: unseen session remains missing
+ok 35 - unseen session remains missing
+  ---
+  duration_ms: 0.06586
+  type: 'test'
+  ...
+# Subtest: intervention keys remain stable but vary by evidence or channel
+ok 36 - intervention keys remain stable but vary by evidence or channel
+  ---
+  duration_ms: 0.259892
+  type: 'test'
+  ...
+# Subtest: key construction avoids delimiter-collision aliases
+ok 37 - key construction avoids delimiter-collision aliases
+  ---
+  duration_ms: 0.107211
+  type: 'test'
+  ...
+# Subtest: interruption or missing result does not mean no side effect
+ok 38 - interruption or missing result does not mean no side effect
+  ---
+  duration_ms: 0.071047
+  type: 'test'
+  ...
+# Subtest: tool completion records operation, not task correctness
+ok 39 - tool completion records operation, not task correctness
+  ---
+  duration_ms: 0.04649
+  type: 'test'
+  ...
+# Subtest: only explicit pre-dispatch denial establishes denied-before-dispatch
+ok 40 - only explicit pre-dispatch denial establishes denied-before-dispatch
+  ---
+  duration_ms: 0.045189
+  type: 'test'
+  ...
+# Subtest: experiment and audit cannot recursively launch optimizer
+ok 41 - experiment and audit cannot recursively launch optimizer
+  ---
+  duration_ms: 0.069956
+  type: 'test'
+  ...
+# Subtest: excerpt absence cannot become specification-wide absence
+ok 42 - excerpt absence cannot become specification-wide absence
+  ---
+  duration_ms: 0.079621
+  type: 'test'
+  ...
+1..42
+# tests 42
+# suites 0
+# pass 42
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 79.38184

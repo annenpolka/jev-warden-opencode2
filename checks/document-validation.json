@@ -1,0 +1,74 @@
+{
+  "documentVersion": "OC2-0.1",
+  "date": "2026-09-18",
+  "markdownBytes": 100977,
+  "markdownLines": 1431,
+  "htmlBytes": 134368,
+  "chapters": 28,
+  "appendices": 4,
+  "htmlUniqueIds": 158,
+  "brokenInternalLinks": [],
+  "brokenLocalLinks": [],
+  "markdownContentPreservedInHtml": true,
+  "sourceBaselineCopySha256": "34a5becdbd2472698311a80db4666ea0b915bbeb413ae01697bde9fc42219162",
+  "sourceBaselineUnchanged": true,
+  "fencedJsonExamplesParsed": 1,
+  "jsonFilesParsed": [
+    "checks/visual-check.json",
+    "reference/sources.json",
+    "appendix/doctor.example.json",
+    "appendix/warden.policy.example.json",
+    "appendix/opencode.config.example.json",
+    "appendix/acceptance-matrix.json",
+    "appendix/tsconfig.json",
+    "checks/reference-build/package.json"
+  ],
+  "referenceTypecheck": {
+    "status": "PASSED",
+    "compiler": "TypeScript 5.8.3",
+    "scope": "Own pure internal contracts only; not OpenCode Plugin types"
+  },
+  "offlineReferenceTests": {
+    "status": "PASSED",
+    "tests": 42,
+    "failures": 0,
+    "runtime": "v22.16.0"
+  },
+  "plannedHostAndSemanticAcceptanceCases": 48,
+  "visual": {
+    "method": "Chromium / Playwright set_content from the generated HTML (file URL navigation blocked by browser administrator policy)",
+    "viewports": {
+      "desktop": [
+        1440,
+        1080
+      ],
+      "mobile": [
+        390,
+        844
+      ]
+    },
+    "screenshotsReviewed": [
+      "desktop-cover.png",
+      "mobile-cover.png",
+      "desktop-rpc.png"
+    ],
+    "javascriptErrors": 0,
+    "globalHorizontalOverflow": false,
+    "externalResourcesLoaded": false,
+    "coverage": "Representative cover and RPC chapter; full-document scroll width and heading/link checks"
+  },
+  "notPerformed": [
+    "OpenCode installation or runtime startup",
+    "actual server/TUI plugin load",
+    "host API conformance tests",
+    "actual Jev or generative model calls",
+    "remote client tests",
+    "live optimization or promotion",
+    "external link availability verification"
+  ],
+  "validationLimitations": [
+    "JSON examples were parsed, not checked against a future complete Warden runtime schema.",
+    "Source declarations and docs are not proof of installed host behavior.",
+    "Pure contract tests are illustrative partial coverage, not a security proof."
+  ]
+}

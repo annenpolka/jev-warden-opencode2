@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "warden.policy/0.1",
+  "id": "candidate-specific-definition-v1",
+  "parentId": "baseline-observe-only",
+  "status": "candidate",
+  "scope": {
+    "kind": "project",
+    "projectRef": "project-under-test"
+  },
+  "compatibility": {
+    "coreContract": "warden.core/0.1",
+    "requiredCapabilities": [
+      "source.read",
+      "context.guidance"
+    ]
+  },
+  "selectors": [
+    {
+      "id": "registered-definition-selector",
+      "options": {
+        "followReferencedConstants": true,
+        "maxFiles": 6
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "actual_expected_calls_definition_visible",
+      "type": "noul",
+      "instructions": "提示されたtest_codeとdefinitionsには、assertionが参照するEXPECTED_CALLSの実際の定義が含まれ、期待する合計呼出回数を定数名から推測せずに読み取れるか。",
+      "criteria": {
+        "true": "該当する定義が示され、参照先と値の対応を読み取れる。",
+        "false": "定義が提示されていない、同名別スコープしかない、または値の対応を読み取れない。"
+      },
+      "inputs": [
+        "test_code",
+        "definitions"
+      ],
+      "role": "specific-evidence-sufficiency"
+    }
+  ],
+  "guidance": {
+    "kind": "definition-needed",
+    "delivery": "advisory",
+    "maxItems": 2,
+    "repeatOnlyOnNewEvidence": true
+  },
+  "promotion": {
+    "evaluationPolicyRef": "fixed-evaluation-policy-1",
+    "reportRefs": []
+  },
+  "notes": "候補データの形状例。grant、固定採用基準、key、任意実行コードは含まない。数値は説明用で未校正。"
+}

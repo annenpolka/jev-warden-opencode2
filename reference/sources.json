@@ -1,0 +1,149 @@
+{
+  "document_version": "OC2-0.1",
+  "retrieval_date": "2026-09-18",
+  "source_commit": "a2594ddefb6557ecf7e7edb3e30ea50c71df8519",
+  "source_package": "@opencode/plugin",
+  "source_package_version": "2.0.7",
+  "installed_host_version": null,
+  "live_runtime_tested": false,
+  "sources": [
+    {
+      "id": "W0",
+      "title": "Jev Warden 統合設計書 v0.2",
+      "url": "reference/jev-warden-complete-design-v0.2.md",
+      "status_note": "会話添付の既存設計。外部製品の仕様ではなく設計上の正本。"
+    },
+    {
+      "id": "OC01",
+      "title": "OpenCode v2 branch の調査時点",
+      "url": "https://github.com/anomalyco/opencode/commit/a2594ddefb6557ecf7e7edb3e30ea50c71df8519",
+      "status_note": "2026-09-17T19:54:34Z のcommitを調査baselineとして固定。latestや安定版とは主張しない。"
+    },
+    {
+      "id": "OC02",
+      "title": "Plugin package manifest",
+      "url": "https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/package.json",
+      "status_note": "ソース内のnameは @opencode/plugin、versionは2.0.7。配布済みCLI／npm版の確認ではない。"
+    },
+    {
+      "id": "OC03",
+      "title": "Promise Plugin API README",
+      "url": "https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/README.md",
+      "status_note": "setup/cleanup、同期transform、context hook、reload、完全なtool値の登録を確認。"
+    },
+    {
+      "id": "OC04",
+      "title": "Effect Plugin API README",
+      "url": "https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/README.md",
+      "status_note": "scopeによる登録解除、hookの順序、registry再構築、既存snapshotの非変更を確認。"
+    },
+    {
+      "id": "OC05",
+      "title": "Effect Plugin Context / Definition",
+      "url": "https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/plugin.ts",
+      "status_note": "effect入口、公開domain型、Scope型を確認。"
+    },
+    {
+      "id": "OC06",
+      "title": "Session hook 型",
+      "url": "https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts",
+      "status_note": "prompt/context/compaction等の入力と変更可能項目、request kind、session methodsを確認。"
+    },
+    {
+      "id": "OC07",
+      "title": "Tool hook / registry 型",
+      "url": "https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/tool.ts",
+      "status_note": "before/after、id=Tool.CallID、completed/errorのunion、beforeのみ型付き失敗を確認。"
+    },
+    {
+      "id": "OC08",
+      "title": "Permission hook 型",
+      "url": "https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/permission.ts",
+      "status_note": "effect/messageとreadonlyな評価情報を確認。最終権限順序はこの型だけでは確定しない。"
+    },
+    {
+      "id": "OC09",
+      "title": "RPC Effect domain 型",
+      "url": "https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/rpc.ts",
+      "status_note": "register/emitとScope、handler contextのerrorを確認。caller identityの保証ではない。"
+    },
+    {
+      "id": "OC10",
+      "title": "Worktree domain 型",
+      "url": "https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/worktree.ts",
+      "status_note": "WorktreeApi継承、provider transform/reloadを確認。OS隔離の保証ではない。"
+    },
+    {
+      "id": "OC11",
+      "title": "TUI plugin 入口",
+      "url": "https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/index.ts",
+      "status_note": "@opencode/plugin/tui側の公開入口を確認。"
+    },
+    {
+      "id": "OC12",
+      "title": "TUI plugin 定義",
+      "url": "https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/plugin.ts",
+      "status_note": "setupとcleanupを確認。"
+    },
+    {
+      "id": "OC13",
+      "title": "TUI Context 型",
+      "url": "https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/tui/context.ts",
+      "status_note": "storage、data、location、slot、panel、router、dialog等の必要範囲を確認。全文を実機検証した意味ではない。"
+    },
+    {
+      "id": "D01",
+      "title": "OpenCode V2 Plugins（可変docs）",
+      "url": "https://opencode.ai/v2/docs/build/plugins",
+      "status_note": "調査中に新旧表記の異なる取得結果があった。最終取得は旧 @opencode-ai/plugin / catalog 表記。固定ソースを優先。"
+    },
+    {
+      "id": "D02",
+      "title": "OpenCode V2 Effect plugins（可変docs）",
+      "url": "https://opencode.ai/v2/docs/build/plugins/effect",
+      "status_note": "補助的な説明を確認。公開ソースのOC04/OC05を契約baselineとする。"
+    },
+    {
+      "id": "D03",
+      "title": "OpenCode V2 Plugin RPC（可変docs）",
+      "url": "https://opencode.ai/v2/docs/build/plugins/rpc",
+      "status_note": "調査中にlive-only通知・location・外部clientの説明を確認。後続再取得はcache miss。耐久性・認証は実機試験。"
+    },
+    {
+      "id": "D04",
+      "title": "OpenCode V2 CLI/TUI plugin docs",
+      "url": "https://opencode.ai/v2/docs/build/plugins/cli",
+      "status_note": "今回の本文取得は失敗。TUIは固定ソースOC11〜OC13を参照し、導入設定を未確認とする。"
+    },
+    {
+      "id": "J01",
+      "title": "TypeSafe primitives",
+      "url": "https://docs.typesafe.ai/primitives",
+      "status_note": "Jev共通設計の参考。今回の実API評価はなし。"
+    },
+    {
+      "id": "J02",
+      "title": "TypeSafe speculative fan-out",
+      "url": "https://docs.typesafe.ai/patterns/fan-out",
+      "status_note": "独立質問の投機的な同時評価。性能数値の保証には用いない。"
+    },
+    {
+      "id": "J03",
+      "title": "TypeSafe Skill suggestion cookbook",
+      "url": "https://docs.typesafe.ai/cookbooks/skill_suggestion",
+      "status_note": "既存設計から継承する参考。今回の再取得は失敗。bench数値は転載しない。"
+    },
+    {
+      "id": "J04",
+      "title": "TypeSafe Autoresearch feature discovery",
+      "url": "https://docs.typesafe.ai/cookbooks/autoresearch_feature_discovery",
+      "status_note": "既存設計から継承する参考。今回の再取得は失敗。Wardenの有効性を証明するものではない。"
+    },
+    {
+      "id": "J05",
+      "title": "TypeSafe Confidence",
+      "url": "https://docs.typesafe.ai/confidence",
+      "status_note": "確率とconfidenceの区別の参考。今回の言語性能・校正は未評価。"
+    }
+  ]
+}

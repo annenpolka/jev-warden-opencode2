@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": [
+    {
+      "package": "./plugins/jev-warden.server.ts",
+      "options": {
+        "mode": "observe",
+        "externalEvaluation": {
+          "enabled": false,
+          "grantRef": null
+        },
+        "lab": {
+          "endpoint": "http://127.0.0.1:43190",
+          "credentialRef": "os-store:warden-lab"
+        },
+        "policyActivation": "session-pinned",
+        "skillSelection": "recommend-only",
+        "learning": {
+          "enabled": false,
+          "trigger": "resolved-findings-and-sampled-audit"
+        }
+      }
+    }
+  ]
+}

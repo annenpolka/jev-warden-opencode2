@@ -1,0 +1,438 @@
+{
+  "schemaVersion": "warden.acceptance-plan/0.1",
+  "runtimeTestsExecuted": false,
+  "cases": [
+    {
+      "id": "OC2-001",
+      "category": "Host",
+      "scenario": "初回loadとcleanup",
+      "requiredInvariant": "登録を解除し、元のhost処理を維持する",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-002",
+      "category": "Host",
+      "scenario": "setup中の無限stream",
+      "requiredInvariant": "setupを終え、streamはscopeへ所有させる",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-003",
+      "category": "Prompt",
+      "scenario": "同じpromptの再送",
+      "requiredInvariant": "二重の課金評価・Skill追加をしない",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-004",
+      "category": "Prompt",
+      "scenario": "先行pluginがdraftを書換え",
+      "requiredInvariant": "観測draftを原文と偽らない",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-005",
+      "category": "Prompt",
+      "scenario": "Skill resolution前後",
+      "requiredInvariant": "安全な追加経路を確認、不明なら推薦のみ",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-006",
+      "category": "Context",
+      "scenario": "retryによる再dispatch",
+      "requiredInvariant": "同じguidanceを二重に注入しない",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-007",
+      "category": "Context",
+      "scenario": "履歴readback",
+      "requiredInvariant": "一時guidanceがcanonical user意思へ変わらない",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-008",
+      "category": "Context",
+      "scenario": "compaction/generate/title",
+      "requiredInvariant": "primaryと区別し再帰生成しない",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-009",
+      "category": "Tool",
+      "scenario": "成功した実toolとJev障害",
+      "requiredInvariant": "tool成功をWardenエラーへ変えない",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-010",
+      "category": "Tool",
+      "scenario": "失敗した実toolとrecording障害",
+      "requiredInvariant": "元のtoolエラーを保持する",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-011",
+      "category": "Tool",
+      "scenario": "before以降にinputが変更",
+      "requiredInvariant": "requested/effectiveを混同しない",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-012",
+      "category": "Tool",
+      "scenario": "取消後にafterがない",
+      "requiredInvariant": "結果不明を未実行と扱わない",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-013",
+      "category": "Tool",
+      "scenario": "CodeMode内部tool",
+      "requiredInvariant": "観測粒度を確認し、完全網羅と誇張しない",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-014",
+      "category": "Tool",
+      "scenario": "MCP/direct shell/外部terminal",
+      "requiredInvariant": "capture gapを記録しsnapshotで補う",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-015",
+      "category": "Permission",
+      "scenario": "config denyの最終優先順位",
+      "requiredInvariant": "Wardenによる弱化なし、他pluginとの最終動作を確認",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-016",
+      "category": "Permission",
+      "scenario": "元のaskとJev高確率",
+      "requiredInvariant": "askをallowへ変えない",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-017",
+      "category": "Permission",
+      "scenario": "permissionとexecute.before順序",
+      "requiredInvariant": "認可と実行対象の相違を検出する",
+      "phase": "0",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-018",
+      "category": "Scope",
+      "scenario": "同名sessionを別serverで実行",
+      "requiredInvariant": "別scopeの資料・guidanceを共有しない",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-019",
+      "category": "Scope",
+      "scenario": "同serverの二つのlocation",
+      "requiredInvariant": "ctx.locationだけでscopeを決めない",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-020",
+      "category": "Scope",
+      "scenario": "child agentと委譲",
+      "requiredInvariant": "権限を広げず親子とmodel loopを区別する",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-021",
+      "category": "Jev",
+      "scenario": "429/5xx/timeout",
+      "requiredInvariant": "期限・予算を保ち未評価をpassにしない",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-022",
+      "category": "Jev",
+      "scenario": "無効分布/未知choice",
+      "requiredInvariant": "raw異常を記録し正常化しない",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-023",
+      "category": "Jev",
+      "scenario": "遅延して戻った旧snapshot回答",
+      "requiredInvariant": "staleとして適用しない",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-024",
+      "category": "Jev",
+      "scenario": "cold/warm・batch幅・日英",
+      "requiredInvariant": "実測を残し数値を普遍化しない",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-025",
+      "category": "RPC",
+      "scenario": "切断中のevent欠落",
+      "requiredInvariant": "snapshot/deltaから復旧する",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-026",
+      "category": "RPC",
+      "scenario": "重複/逆順eventとsnapshot race",
+      "requiredInvariant": "cut sequenceを用いて一貫したprojectionを作る",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-027",
+      "category": "RPC",
+      "scenario": "偽造sessionID/管理呼出",
+      "requiredInvariant": "呼出主体のgrantを再検証する",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-028",
+      "category": "RPC",
+      "scenario": "server epoch変更",
+      "requiredInvariant": "旧epochの応答とpinを再利用しない",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-029",
+      "category": "Storage",
+      "scenario": "ack前後のcrash",
+      "requiredInvariant": "idempotentな再送と復旧が働く",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-030",
+      "category": "Storage",
+      "scenario": "disk full/Lab停止",
+      "requiredInvariant": "durability_degradedを表示する",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-031",
+      "category": "Policy",
+      "scenario": "v12既存sessionとv13新session",
+      "requiredInvariant": "それぞれpinを維持する",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-032",
+      "category": "Policy",
+      "scenario": "domain reloadと既読tool snapshot",
+      "requiredInvariant": "安全なschema共存と互換性を確認する",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-033",
+      "category": "Policy",
+      "scenario": "緊急失効",
+      "requiredInvariant": "影響sessionのadvisory停止と成果物再確認",
+      "phase": "4",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-034",
+      "category": "TUI",
+      "scenario": "二台のclientで同じsession",
+      "requiredInvariant": "推論・介入・学習jobを二重作成しない",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-035",
+      "category": "TUI",
+      "scenario": "session切替後に古いRPC応答",
+      "requiredInvariant": "別scopeの内容を表示しない",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-036",
+      "category": "TUI",
+      "scenario": "headless/remote/slot競合",
+      "requiredInvariant": "UI障害で主作業を止めない",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-037",
+      "category": "Experiment",
+      "scenario": "dirty/untracked overlay",
+      "requiredInvariant": "mainを変更せず当時snapshotを再現する",
+      "phase": "2",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-038",
+      "category": "Experiment",
+      "scenario": "依存install/testの副作用",
+      "requiredInvariant": "実ユーザー鍵や未許可networkへ到達しない",
+      "phase": "2",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-039",
+      "category": "Experiment",
+      "scenario": "mutation testがsetupで失敗",
+      "requiredInvariant": "regressionを検知したと誤評価しない",
+      "phase": "2",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-040",
+      "category": "Experiment",
+      "scenario": "cleanup ownership不明",
+      "requiredInvariant": "他のworktreeを削除しない",
+      "phase": "2",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-041",
+      "category": "Learning",
+      "scenario": "後から得た定義の混入",
+      "requiredInvariant": "decision入力とoutcomeラベルを分離する",
+      "phase": "3",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-042",
+      "category": "Learning",
+      "scenario": "同一fixtureの多数派生",
+      "requiredInvariant": "独立事例数を水増ししない",
+      "phase": "3",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-043",
+      "category": "Learning",
+      "scenario": "実験内で学習を再帰起動",
+      "requiredInvariant": "親schedulerだけが次の研究を起こす",
+      "phase": "3",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-044",
+      "category": "Learning",
+      "scenario": "audit fixtureの書換え試行",
+      "requiredInvariant": "optimizerのOS/API権限で拒否する",
+      "phase": "3",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-045",
+      "category": "Learning",
+      "scenario": "候補/旧版/無介入E2E",
+      "requiredInvariant": "判断精度と作業改善を別々に測る",
+      "phase": "4",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-046",
+      "category": "Learning",
+      "scenario": "良い候補と悪い候補",
+      "requiredInvariant": "自動採用・保留・退役を行う",
+      "phase": "4",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-047",
+      "category": "Privacy",
+      "scenario": "送信grant撤回",
+      "requiredInvariant": "pending/cache/episode/candidateへの依存を追跡",
+      "phase": "1",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "OC2-048",
+      "category": "EndToEnd",
+      "scenario": "EXPECTED_CALLSの証拠不足",
+      "requiredInvariant": "取得・反証・経験・候補・比較・適用まで閉じる",
+      "phase": "4",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "warden.doctor/0.1",
+  "reportKind": "template-not-executed",
+  "documentVersion": "OC2-0.1",
+  "researchBaseline": {
+    "repository": "anomalyco/opencode",
+    "branch": "v2",
+    "commit": "a2594ddefb6557ecf7e7edb3e30ea50c71df8519",
+    "sourcePackageName": "@opencode/plugin",
+    "sourcePackageVersion": "2.0.7",
+    "registryAvailabilityVerified": false
+  },
+  "installed": {
+    "cliVersion": null,
+    "serverVersion": null,
+    "channel": null,
+    "pluginVersion": null,
+    "runtime": null,
+    "platform": null,
+    "lockfileDigest": null
+  },
+  "capabilities": [
+    {
+      "name": "server.plugin.load",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "session.prompt.original-and-resolution-order",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "session.context.dispatch-and-persistence",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "tool.before-after.id-correlation",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "permission.final-order-and-nonweakening",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "event.execution.lifecycle",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "rpc.auth-location-cancel",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "rpc.reconnect",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "storage.restart",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "registry.multi-session",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "tui.load-and-two-clients",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "worktree.dirty-snapshot",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "executor.sandbox",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "jev.live-evaluation",
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "learning.promotion-e2e",
+      "status": "NOT_RUN"
+    }
+  ],
+  "status": "NOT_RUN",
+  "notes": [
+    "sourceの版はinstalledの版ではない。",
+    "適合試験に成功した項目だけ結果を記入する。"
+  ]
+}

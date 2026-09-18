@@ -1,0 +1,120 @@
+{
+  "documentVersion": "OC2-0.1",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 1372,
+      "sha256": "539d082e64c68c48297243f4c6f0eeb6c7fbb695f1e54920227b9e0d85dc6db9"
+    },
+    {
+      "path": "appendix/acceptance-matrix.json",
+      "bytes": 12544,
+      "sha256": "3e861357ee08964b05c55aee4d9f617b9376f7e6c4d3ee2b320e213dd77210fb"
+    },
+    {
+      "path": "appendix/core-contracts.test.mjs",
+      "bytes": 6591,
+      "sha256": "67b00efd4311838dc0c1cb3a4e268e358fe9040e3b8d4afdd0af394f6189c6a3"
+    },
+    {
+      "path": "appendix/core-contracts.ts",
+      "bytes": 8065,
+      "sha256": "3c620aeb3ab4c14b72131348f70f7bd48331360d63c2f88735fb760207027bcd"
+    },
+    {
+      "path": "appendix/doctor.example.json",
+      "bytes": 1997,
+      "sha256": "f2e3c13f6c8f61422b12c358fc46d658475c0530b6d3e7e80545bb8a9a60b160"
+    },
+    {
+      "path": "appendix/implementation-brief.md",
+      "bytes": 3341,
+      "sha256": "6e064d4c9251c9835b344edee593602d2b4927603cf21136306ee6bbf8774ee4"
+    },
+    {
+      "path": "appendix/opencode.config.example.json",
+      "bytes": 620,
+      "sha256": "7aef92f87ec16fc142f785009b716ce728993732454eb44c74c98a588d64ae68"
+    },
+    {
+      "path": "appendix/tsconfig.json",
+      "bytes": 482,
+      "sha256": "580c3a5f931665cdd25ec3bc9d3b80860a46d1987087f378926eebe320c39a81"
+    },
+    {
+      "path": "appendix/warden.policy.example.json",
+      "bytes": 1655,
+      "sha256": "47e2d055567067b1053f2cbf85bb056137f5a70b6802d5311ffa42eb9b6239a6"
+    },
+    {
+      "path": "checks/contract-tests.log",
+      "bytes": 7098,
+      "sha256": "d427a2d5b0039721399767656318e68a9daa8a0fa8dcb07589756bd50f334b4e"
+    },
+    {
+      "path": "checks/desktop-cover.png",
+      "bytes": 387779,
+      "sha256": "8fe64bc07fd1f19ffc88239c1387e20102d6edb5bf6b10fd1146d678b03ec1f0"
+    },
+    {
+      "path": "checks/desktop-rpc.png",
+      "bytes": 255924,
+      "sha256": "335aef65d9c17cfa50f6cb7ce7dacd73cc321bb549031938287206a9f5212150"
+    },
+    {
+      "path": "checks/document-validation.json",
+      "bytes": 2317,
+      "sha256": "5c588c7d5a4394f1349c05bad6fdf36f4d54bf76200ae4f44ea564ab5ea81324"
+    },
+    {
+      "path": "checks/mobile-cover.png",
+      "bytes": 142617,
+      "sha256": "a7a65b871840577a3c5a60cb0f7476c4349e595570793f4f0d22dbd32ba49bc4"
+    },
+    {
+      "path": "checks/mobile-rpc.png",
+      "bytes": 79389,
+      "sha256": "25700730fc3479bb96cd06195754dd10bb305e3879749e65343868a7598c73ab"
+    },
+    {
+      "path": "checks/reference-build/core-contracts.js",
+      "bytes": 5479,
+      "sha256": "008bed02134970a3d3a97fd984af02cc97a204c8b36c865663b7851969c30e7a"
+    },
+    {
+      "path": "checks/reference-build/package.json",
+      "bytes": 33,
+      "sha256": "89c47db7851f89caec72da4f215ebc21cf1e294aeef3b45d2583562d846ab035"
+    },
+    {
+      "path": "checks/typecheck.log",
+      "bytes": 14,
+      "sha256": "9265ac58ff367868abd52fc852ecff28622facad715e3c3a0fcf92c4ca2d86e2"
+    },
+    {
+      "path": "checks/visual-check.json",
+      "bytes": 536,
+      "sha256": "1e0a3feb02613392d559b951e4bb5d8499dbaf7adfa3e324f9d91b6af53f482c"
+    },
+    {
+      "path": "jev-warden-opencode2-design-v0.1.html",
+      "bytes": 134368,
+      "sha256": "b092972437fdeee50580cb7ea25497229c7a0c40b12016aa917a5702bc21282f"
+    },
+    {
+      "path": "jev-warden-opencode2-design-v0.1.md",
+      "bytes": 100977,
+      "sha256": "7cb42d4e69228f4a496fb17a55aa11cabb2bd8203766f8c88582448ae2d088a6"
+    },
+    {
+      "path": "reference/jev-warden-complete-design-v0.2.md",
+      "bytes": 154634,
+      "sha256": "34a5becdbd2472698311a80db4666ea0b915bbeb413ae01697bde9fc42219162"
+    },
+    {
+      "path": "reference/sources.json",
+      "bytes": 7186,
+      "sha256": "9a71a89f97dc4933056f327b0b4c43006ea49e200f8083a84faca9d89bb487d1"
+    }
+  ]
+}
