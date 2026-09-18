@@ -1,0 +1,44 @@
+
+
+
+
+
+
+
+
+
+
+
+
+                                   Plugins                                                                      esc
+
+                                   Search
+
+                                   TUI
+                                   herdr.opencode.session-selection                                           local
+                                   jev-warden.tui                                                             local
+
+                                   Server
+                                   herdr.opencode                                                             local
+                                   jev-warden                                                                 local
+                                   jw-host-probe                                                              local
+
+                                   ctrl+a show internal                                                 disable enter
+
+                                      /…/89bbgzfj41q22bw…/T/jw-tui-load-CR6zpk  shift+tab agents  ctrl+p commands
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                                                                                               2.0.7
+

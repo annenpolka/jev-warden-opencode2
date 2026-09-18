@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"promotion_separation_fidelity":{"type":"noul","noul":0.88},"promotion_sufficiency":{"type":"noul","noul":0.94},"mutation_classification_fidelity":{"type":"noul","noul":0.97},"mutation_sufficiency":{"type":"noul","noul":0.98}},"usage":{"input_tokens":2159,"output_tokens":89}}

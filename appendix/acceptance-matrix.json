@@ -362,7 +362,8 @@
       "requiredInvariant": "UI障害で主作業を止めない",
       "phase": "1",
       "status": "NOT_RUN",
-      "evidenceRefs": []
+      "evidenceRefs": [],
+      "statusNote": "opencode 2.0.7ではserver pluginの./tuiはCLI側でのみ発見されKeymap.Provider欠如で失敗し、対話TUI本体はimportしない（checks/tui-pane-2.0.7.txt, EXTRA-TUI-LOAD=BLOCKED）。UI障害がserver処理を止めないことは全serverケースのpassで確認。二台client/slot競合は未実施。"
     },
     {
       "id": "OC2-037",
@@ -388,8 +389,12 @@
       "scenario": "mutation testがsetupで失敗",
       "requiredInvariant": "regressionを検知したと誤評価しない",
       "phase": "2",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#EXTRA-MUTATION-EXECUTOR",
+        "checks/mutation-2026-09-18.json"
+      ],
+      "statusNote": "隔離コピーでbaseline合格、誤実装はassertionで検出、構文エラーはsetup_errorに分類。検知と誤評価を分離。"
     },
     {
       "id": "OC2-040",
@@ -397,8 +402,12 @@
       "scenario": "cleanup ownership不明",
       "requiredInvariant": "他のworktreeを削除しない",
       "phase": "2",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#EXTRA-MUTATION-EXECUTOR",
+        "checks/mutation-2026-09-18.json"
+      ],
+      "statusNote": "executorは自分が作ったtempディレクトリのみ削除し、mainツリーのdigest不変を確認。host worktree APIのownershipではない。"
     },
     {
       "id": "OC2-041",
@@ -490,12 +499,15 @@
     "workComparison": "deepseek/deepseek-flash, 3 arms x 3 trials (checks/work-comparison/2026-09-18)",
     "lab": "SQLite ingest of the live outbox; 11 events, contiguous ack 11, re-ingest duplicate-safe",
     "jevFaults": "local fault endpoint: timeout/500/429/invalid answer/budget (checks/host-conformance-2.0.7.json#EXTRA-JEV-FAULTS)",
-    "policyLifecycle": "Lab promote/rollback/revoke + per-session pin (checks/host-conformance-2.0.7.json#EXTRA-POLICY-SWITCH)"
+    "policyLifecycle": "Lab promote/rollback/revoke + per-session pin (checks/host-conformance-2.0.7.json#EXTRA-POLICY-SWITCH)",
+    "autoPromotion": "work-comparison decision -> evaluatePromotion gate -> hold recorded in the daily Lab (baseline pointer unchanged)",
+    "mutationExecutor": "isolated copy: regression_detected / setup_error / tolerated (checks/mutation-2026-09-18.json)"
   },
   "notes": [
     "PASSED entries cite checks/host-conformance-2.0.7.json and were executed against the installed host.",
     "NOT_RUN entries remain not executed; do not read the changed runtimeTestsExecuted flag as full coverage.",
     "statusNote records the exact scope of each executed case, including what was not exercised.",
-    "OC2-045 was executed at a smaller volume than the pre-registered adoption threshold; the larger 8-trial run did not show a tool-call improvement, so the candidate remains held."
+    "OC2-045 was executed at a smaller volume than the pre-registered adoption threshold; the larger 8-trial run did not show a tool-call improvement, so the candidate remains held.",
+    "The automated promotion gate rejected the real work-comparison decision (hold) and recorded it in policy history without moving the pointer."
   ]
 }

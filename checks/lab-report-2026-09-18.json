@@ -1,30 +1,32 @@
 {
   "db": "/Users/annenpolka/ghq/github.com/annenpolka/jev-warden-opencode2/.warden/lab.db",
-  "events": 1070,
+  "events": 1341,
+  "episodes": 1,
+  "candidates": 1,
   "types": [
     {
       "type": "tool.requested",
-      "count": 267
+      "count": 337
     },
     {
       "type": "tool.completed",
-      "count": 267
+      "count": 336
     },
     {
       "type": "permission.evaluated",
-      "count": 267
+      "count": 336
     },
     {
       "type": "context.observed",
-      "count": 230
+      "count": 287
     },
     {
       "type": "prompt.observed",
-      "count": 38
+      "count": 43
     },
     {
       "type": "tool.error",
-      "count": 1
+      "count": 2
     }
   ],
   "streams": [
@@ -261,79 +263,99 @@
     {
       "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
       "server_epoch": "epoch_mu6b3v3i_hmk1x54l",
-      "ack_sequence": 38
+      "ack_sequence": 58
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6bset7_8yy2w6c1",
+      "ack_sequence": 198
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6c2vii_lihwy7lo",
+      "ack_sequence": 16
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6c328i_79u1vydf",
+      "ack_sequence": 13
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6c35wb_81khc2gw",
+      "ack_sequence": 24
     }
   ],
   "recent": [
     {
-      "id": "wev_epoch_mu6ak9ie_5okvx9wx_27",
-      "sequence": 27,
-      "type": "tool.requested",
-      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
-      "observed_at": 1789695674962
-    },
-    {
-      "id": "wev_epoch_mu6ak9ie_5okvx9wx_28",
-      "sequence": 28,
-      "type": "permission.evaluated",
-      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
-      "observed_at": 1789695674963
-    },
-    {
-      "id": "wev_epoch_mu6ak9ie_5okvx9wx_29",
-      "sequence": 29,
+      "id": "wev_epoch_mu6b3v3i_hmk1x54l_39",
+      "sequence": 39,
       "type": "tool.completed",
       "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
-      "observed_at": 1789695680438
+      "observed_at": 1789696657471
     },
     {
-      "id": "wev_epoch_mu6ak9ie_5okvx9wx_30",
-      "sequence": 30,
+      "id": "wev_epoch_mu6b3v3i_hmk1x54l_40",
+      "sequence": 40,
       "type": "context.observed",
       "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
-      "observed_at": 1789695680498
+      "observed_at": 1789696657550
     },
     {
-      "id": "wev_epoch_mu6ak9ie_5okvx9wx_31",
-      "sequence": 31,
+      "id": "wev_epoch_mu6b3v3i_hmk1x54l_41",
+      "sequence": 41,
       "type": "tool.requested",
       "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
-      "observed_at": 1789695707590
+      "observed_at": 1789696668017
     },
     {
-      "id": "wev_epoch_mu6ak9ie_5okvx9wx_32",
-      "sequence": 32,
+      "id": "wev_epoch_mu6b3v3i_hmk1x54l_42",
+      "sequence": 42,
       "type": "permission.evaluated",
       "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
-      "observed_at": 1789695707592
+      "observed_at": 1789696668020
     },
     {
-      "id": "wev_epoch_mu6ak9ie_5okvx9wx_33",
-      "sequence": 33,
+      "id": "wev_epoch_mu6b3v3i_hmk1x54l_43",
+      "sequence": 43,
       "type": "tool.completed",
       "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
-      "observed_at": 1789695707594
+      "observed_at": 1789696668108
     },
     {
-      "id": "wev_epoch_mu6ak9ie_5okvx9wx_34",
-      "sequence": 34,
+      "id": "wev_epoch_mu6b3v3i_hmk1x54l_44",
+      "sequence": 44,
       "type": "context.observed",
       "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
-      "observed_at": 1789695707674
+      "observed_at": 1789696668150
     },
     {
-      "id": "wev_epoch_mu6ak9ie_5okvx9wx_35",
-      "sequence": 35,
-      "type": "tool.requested",
+      "id": "wev_epoch_mu6b3v3i_hmk1x54l_45",
+      "sequence": 45,
+      "type": "prompt.observed",
       "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
-      "observed_at": 1789695716461
+      "observed_at": 1789697618012
     },
     {
-      "id": "wev_epoch_mu6ak9ie_5okvx9wx_36",
-      "sequence": 36,
+      "id": "wev_epoch_mu6b3v3i_hmk1x54l_46",
+      "sequence": 46,
+      "type": "context.observed",
+      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
+      "observed_at": 1789697618049
+    },
+    {
+      "id": "wev_epoch_mu6b3v3i_hmk1x54l_47",
+      "sequence": 47,
       "type": "tool.requested",
       "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
-      "observed_at": 1789695716462
+      "observed_at": 1789697645640
+    },
+    {
+      "id": "wev_epoch_mu6b3v3i_hmk1x54l_48",
+      "sequence": 48,
+      "type": "permission.evaluated",
+      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
+      "observed_at": 1789697645642
     }
   ]
 }

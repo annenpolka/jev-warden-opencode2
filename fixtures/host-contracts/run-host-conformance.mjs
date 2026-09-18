@@ -13,7 +13,7 @@
  * Usage:
  *   node fixtures/host-contracts/run-host-conformance.mjs --out checks/host-conformance.json
  */
-import { spawn } from "node:child_process"
+import { spawn, spawnSync } from "node:child_process"
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs"
 import { createServer } from "node:http"
 import { createServer as createNetServer } from "node:net"
@@ -1106,6 +1106,95 @@ async function main() {
       return result
     } finally {
       rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  // ------------------------------------------------------------------ TUI load
+  await runCase("EXTRA-TUI-LOAD", "tui", "TUI plugin load and command surface", async () => {
+    const tmuxCheck = spawnSync("which", ["tmux"], { encoding: "utf8" })
+    if (tmuxCheck.status !== 0) {
+      return { status: "BLOCKED", detail: "tmux is not available on this host", evidenceRefs: [] }
+    }
+    const scratch = mkdtempSync(join(tmpdir(), "jw-tui-load-"))
+    const tuiLog = join(scratch, "tui.jsonl")
+    const paneOut = join(repoRoot, "checks", "tui-pane-2.0.7.txt")
+    const session = `jw-tui-${Date.now()}`
+    try {
+      writeFileSync(
+        join(scratch, "opencode.json"),
+        JSON.stringify(
+          {
+            $schema: "https://opencode.ai/config.json",
+            plugins: [
+              { package: probePath, options: { mockBaseURL: null } },
+              { package: wardenPath, options: { mode: "observe" } },
+            ],
+          },
+          null,
+          2,
+        ) + "\n",
+      )
+      const start = spawnSync(
+        "tmux",
+        ["new-session", "-d", "-s", session, "-x", "150", "-y", "45", "-c", scratch, `env JW_PROBE_TUI_LOG=${tuiLog} opencode`],
+        { encoding: "utf8" },
+      )
+      assert(start.status === 0, `tmux new-session failed: ${start.stderr}`)
+      await sleep(10_000)
+      spawnSync("tmux", ["send-keys", "-t", session, "/plugins", "Enter"], { encoding: "utf8" })
+      await sleep(1_000)
+      spawnSync("tmux", ["send-keys", "-t", session, "Enter"], { encoding: "utf8" })
+      await sleep(2_000)
+      const pane = spawnSync("tmux", ["capture-pane", "-t", session, "-p"], { encoding: "utf8" }).stdout ?? ""
+      writeFileSync(paneOut, pane)
+      spawnSync("tmux", ["kill-session", "-t", session], { encoding: "utf8" })
+
+      const events = readJsonl(tuiLog)
+      const imported = events.some((entry) => entry.event === "tui.module-imported")
+      const setup = events.some((entry) => entry.event === "tui.setup")
+      const listedInPanel = pane.includes("jw-host-probe")
+      if (imported && setup) {
+        return {
+          status: "PASSED",
+          detail: "the TUI process imported the ./tui entry and ran setup",
+          evidenceRefs: ["checks/tui-pane-2.0.7.txt"],
+        }
+      }
+      return {
+        status: "BLOCKED",
+        detail:
+          `TUI process did not import the ./tui entry (moduleImported=${imported}, setup=${setup}, ` +
+          `listedInPanel=${listedInPanel}); on opencode 2.0.7 the CLI-side loader reports ` +
+          `"Keymap.Provider is missing" and the interactive TUI does not load V2 ./tui entries`,
+        evidenceRefs: ["checks/tui-pane-2.0.7.txt"],
+      }
+    } finally {
+      spawnSync("tmux", ["kill-session", "-t", session], { encoding: "utf8" })
+      rmSync(scratch, { recursive: true, force: true })
+    }
+  })
+
+  // ------------------------------------------------------- mutation executor
+  await runCase("EXTRA-MUTATION-EXECUTOR", "executor", "mutation detection separates regression from setup failure", async () => {
+    const out = join(repoRoot, "checks", "mutation-2026-09-18.json")
+    const run = spawnSync(process.execPath, [join(here, "..", "executor", "run-mutation.mjs"), "--out", out], {
+      encoding: "utf8",
+      timeout: 120_000,
+    })
+    assert(run.status === 0, `mutation executor failed: ${run.stderr?.slice(0, 300)}`)
+    const receipt = JSON.parse(readFileSync(out, "utf8"))
+    assert(receipt.baseline?.passed === true, "baseline did not pass")
+    const byId = Object.fromEntries(receipt.mutations.map((entry) => [entry.id, entry.classification]))
+    assert(byId["double-send"] === "regression_detected", `wrong implementation classified as ${byId["double-send"]}`)
+    assert(byId["syntax-error"] === "setup_error", `broken setup classified as ${byId["syntax-error"]}`)
+    assert(byId["comment-only"] === "tolerated", `tolerated change classified as ${byId["comment-only"]}`)
+    assert(receipt.mainUnchanged === true, "the main task directory changed")
+    assert(receipt.cleanup?.removed === true, "the owned temp directory was not removed")
+    return {
+      status: "PASSED",
+      detail:
+        "isolated copy: baseline passed, wrong implementation detected at the assertion, broken setup classified as setup_error, tolerated change passed, main tree unchanged",
+      evidenceRefs: ["checks/mutation-2026-09-18.json"],
     }
   })
 

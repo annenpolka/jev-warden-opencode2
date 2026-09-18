@@ -1,0 +1,10 @@
+{
+  "decision": "hold",
+  "reason": "not_recommended",
+  "exported": {
+    "path": "/Users/annenpolka/ghq/github.com/annenpolka/jev-warden-opencode2/.warden/policy/active.json",
+    "bundleId": null,
+    "digest": null,
+    "revoked": 0
+  }
+}

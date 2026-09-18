@@ -1,0 +1,55 @@
+--- design 11.4 excerpt:
+
+mutation後にテストが落ちても、型エラーやsetup障害であれば目的のassertionが回帰を検出した証拠ではない。実行の理由を区別する。
+--- classify function:
+const ASSERTION_PATTERN = /notifies once per event|AssertionError|Expected values/
+const SETUP_PATTERN = /SyntaxError|ERR_MODULE_NOT_FOUND|Cannot find module|ERR_UNSUPPORTED|Unexpected token/
+
+function classify(run) {
+  if (run.exitCode === 0) return "tolerated"
+  const output = `${run.stdout}\n${run.stderr}`
+  if (ASSERTION_PATTERN.test(output)) return "regression_detected"
+  if (SETUP_PATTERN.test(output)) return "setup_error"
+  return "unclassified_failure"
+}
+--- receipt sample:
+{
+  "schemaVersion": "warden.mutation-receipt/0.1",
+  "at": 1789698153503,
+  "isolation": "filesystem copy under the OS temp directory; not an OS sandbox",
+  "environment": {
+    "node": "v26.0.0",
+    "platform": "darwin"
+  },
+  "task": {
+    "path": "/Users/annenpolka/ghq/github.com/annenpolka/jev-warden-opencode2/fixtures/executor/task",
+    "files": {
+      "src/notify.mjs": "531567be4875dd56213b3f1b521095ff3235556985d511fee2af88a0b6c534e6",
+      "test/notify.test.mjs": "972a2993cdc3eaee279f90de6970e83883ebbc67f1b436fecc2d86da7e75d0dc"
+    }
+  },
+  "baseline": {
+    "exitCode": 0,
+    "durationMs": 121,
+    "passed": true
+  },
+  "mutations": [
+    {
+      "id": "double-send",
+      "kind": "wrong_implementation",
+      "exitCode": 1,
+      "durationMs": 123,
+      "classification": "regression_detected"
+    },
+    {
+      "id": "syntax-error",
+      "kind": "broken_setup",
+      "exitCode": 1,
+      "durationMs": 117,
+      "classification": "setup_error"
+    },
+    {
+      "id": "comment-only",
+      "kind": "tolerated_change",
+      "exitCode": 0,
+      "durationMs": 124,

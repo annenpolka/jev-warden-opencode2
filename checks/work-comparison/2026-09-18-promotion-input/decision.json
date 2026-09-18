@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "warden.work-comparison/0.1",
+  "at": 1789698187205,
+  "model": "deepseek/deepseek-flash",
+  "task": "find the constant referenced by the test and report the expected notification count",
+  "expected": "3",
+  "guidance": "The constant EXPECTED_CALLS is defined in config/limits.ts.",
+  "candidate": {
+    "id": "candidate-specific-definition-guidance-v1",
+    "digest": "db9fc1050a89453948292b6464adc42bfaa89e12276dc445d124fd4d46b35379",
+    "guidance": "definition-needed"
+  },
+  "preRegistered": {
+    "primaryMetric": "correctness (ANSWER == expected)",
+    "secondaryMetric": "mean tool calls",
+    "adoptionRule": "candidate correct >= baseline correct AND candidate mean tool calls < baseline mean tool calls, at >= 8 trials per arm",
+    "minTrialsForAdoption": 8
+  },
+  "byArm": {
+    "control": {
+      "trials": 1,
+      "correct": 1,
+      "accuracy": 1,
+      "meanDurationMs": 8779,
+      "meanToolCalls": 4
+    },
+    "baseline": {
+      "trials": 1,
+      "correct": 1,
+      "accuracy": 1,
+      "meanDurationMs": 4745,
+      "meanToolCalls": 3
+    },
+    "candidate": {
+      "trials": 1,
+      "correct": 1,
+      "accuracy": 1,
+      "meanDurationMs": 7332,
+      "meanToolCalls": 6
+    }
+  },
+  "comparison": {
+    "candidateMinusBaselineAccuracy": 0,
+    "nonInferior": true,
+    "toolCallsBetter": false,
+    "improvementObserved": false,
+    "enoughTrials": false
+  },
+  "promotionRecommended": false,
+  "decision": "hold",
+  "reason": "only 1 trials per arm; adoption requires at least 8"
+}

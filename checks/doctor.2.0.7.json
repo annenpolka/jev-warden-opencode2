@@ -1,7 +1,7 @@
 {
   "schemaVersion": "warden.doctor/0.1",
   "reportKind": "executed-partial",
-  "generatedAt": 1789696580244,
+  "generatedAt": 1789698283146,
   "baseline": {
     "repository": "anomalyco/opencode",
     "commit": "a2594ddefb6557ecf7e7edb3e30ea50c71df8519",
@@ -27,11 +27,11 @@
       "requirement": "初回loadとcleanup: 登録を解除し、元のhost処理を維持する",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-rGFaYi/probe.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-rGFaYi/opencode.json"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-nes6h7/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-nes6h7/opencode.json"
       ],
       "detail": "load+cleanup+reload on opencode 2.0.7; plugin state active",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
     },
     {
       "id": "OC2-007",
@@ -39,11 +39,11 @@
       "requirement": "履歴readback: 一時guidanceがcanonical user意思へ変わらない",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-cVd7JX/mock.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-cVd7JX/warden.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-wETxFM/mock.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-wETxFM/warden.jsonl"
       ],
       "detail": "temporary system guidance reached the model call and was absent from session readback",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
     },
     {
       "id": "OC2-004",
@@ -51,11 +51,11 @@
       "requirement": "先行pluginがdraftを書換え: 観測draftを原文と偽らない",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-RXmUww/probe.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-RXmUww/warden.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-BLoxnO/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-BLoxnO/warden.jsonl"
       ],
       "detail": "hook order honoured config order: warden recorded the rewritten draft (observed_prompt_draft)",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
     },
     {
       "id": "OC2-017",
@@ -63,10 +63,10 @@
       "requirement": "permissionとexecute.before順序: 認可と実行対象の相違を検出する",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-ZJ763l/probe.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-x3UqMD/probe.jsonl"
       ],
       "detail": "on the tested host, execute.before ran before permission.evaluate; before is a request observation, not an authorization",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
     },
     {
       "id": "OC2-009",
@@ -74,11 +74,11 @@
       "requirement": "成功した実toolとWarden障害: tool成功をWardenエラーへ変えない",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-zhJa0J/probe.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-zhJa0J/opencode.json"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-sqGj99/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-sqGj99/opencode.json"
       ],
       "detail": "warden recording failed without changing the successful tool result; durability degraded was reported",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
     },
     {
       "id": "OC2-011",
@@ -86,10 +86,10 @@
       "requirement": "before以降にinputが変更: requested/effectiveを混同しない",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-sVF6ij/probe.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-pkxKCm/probe.jsonl"
       ],
       "detail": "a later hook changed the effective input; the requested and executed commands differed",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
     },
     {
       "id": "OC2-016",
@@ -97,11 +97,11 @@
       "requirement": "元のaskとWarden: askをallowへ変えない",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-8xuXI8/probe.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-8xuXI8/warden.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-tLb3hC/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-tLb3hC/warden.jsonl"
       ],
       "detail": "ask stayed a pending request while Warden abstained; execution required an explicit user reply",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
     },
     {
       "id": "OC2-015",
@@ -109,11 +109,11 @@
       "requirement": "config denyの最終優先順位: Wardenによる弱化なし、他pluginとの最終動作を確認",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iXQvRx/probe.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iXQvRx/mock.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-JA5SIt/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-JA5SIt/mock.jsonl"
       ],
       "detail": "configured deny skipped the permission hook and produced no side effect; after hook absent (a missing after must stay outcome_unknown)",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
     },
     {
       "id": "HOST-RPC",
@@ -121,10 +121,10 @@
       "requirement": "typed RPC register/call: read-only status method",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-2YKZtm/probe.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-xxZFme/probe.jsonl"
       ],
-      "detail": "typed rpc call returned storageCounter=175",
-      "observedAt": 1789696579761
+      "detail": "typed rpc call returned storageCounter=195",
+      "observedAt": 1789698282712
     },
     {
       "id": "HOST-STORAGE",
@@ -132,10 +132,10 @@
       "requirement": "plugin storage survives location reload",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-l2I002/probe.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-ZKhq6b/probe.jsonl"
       ],
       "detail": "plugin storage counter persisted across a location reload",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
     },
     {
       "id": "EXTRA-JEV-DISABLED",
@@ -143,10 +143,10 @@
       "requirement": "review RPC is rejected when live Jev is disabled",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-jUJCKA/opencode.json"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-IbQhMc/opencode.json"
       ],
       "detail": "live Jev stays off by default; the review RPC is rejected before any transport call",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
     },
     {
       "id": "EXTRA-JEV-LIVE",
@@ -154,11 +154,11 @@
       "requirement": "explicit review RPC runs live Jev, records answers, and enforces budget",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-76pGVn/opencode.json",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-pvO1Gi/opencode.json",
         "checks/jev-live/2026-09-18-specific-sufficiency/"
       ],
-      "detail": "live review through the plugin: sufficiency 0.04 -> 0.85, claim 0.02 -> 0.96; credential-shaped state rejected locally; budget enforced at 2",
-      "observedAt": 1789696579761
+      "detail": "live review through the plugin: sufficiency 0.04 -> 0.88, claim 0.02 -> 0.96; credential-shaped state rejected locally; budget enforced at 2",
+      "observedAt": 1789698282712
     },
     {
       "id": "EXTRA-POLICY-SWITCH",
@@ -166,11 +166,11 @@
       "requirement": "active bundle pin survives rollback; revocation stops guidance",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-YQ1Cce/warden.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-policy-sMdaQl/policy/active.json"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iHG9ol/warden.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-policy-lpCcPh/policy/active.json"
       ],
       "detail": "active candidate-specific-definition-guidance-v1 pinned to A (guidance on); rollback pinned B to baseline and kept A; revocation stopped guidance for A",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
     },
     {
       "id": "EXTRA-JEV-FAULTS",
@@ -178,10 +178,10 @@
       "requirement": "fault injection: timeout, 5xx, 429, invalid answer, budget exhaustion",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-txgo04/warden.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-5cInS4/warden.jsonl"
       ],
       "detail": "timeout, 500, 429 and an out-of-range answer stayed unavailable/invalid_response without normalisation; the invalid value was kept raw for audit; the budget stopped the fifth call locally",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
     },
     {
       "id": "EXTRA-OUTBOX-FAILURE",
@@ -189,11 +189,33 @@
       "requirement": "an unwritable outbox degrades durability without changing tool results",
       "status": "PASSED",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iBSaU5/probe.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iBSaU5/opencode.json"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iEf9gX/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iEf9gX/opencode.json"
       ],
       "detail": "writing the outbox to an unwritable path degraded durability while the tool result stayed unchanged",
-      "observedAt": 1789696579761
+      "observedAt": 1789698282712
+    },
+    {
+      "id": "EXTRA-TUI-LOAD",
+      "area": "tui",
+      "requirement": "TUI plugin load and command surface",
+      "status": "BLOCKED",
+      "evidenceRefs": [
+        "checks/tui-pane-2.0.7.txt"
+      ],
+      "detail": "TUI process did not import the ./tui entry (moduleImported=false, setup=false, listedInPanel=true); on opencode 2.0.7 the CLI-side loader reports \"Keymap.Provider is missing\" and the interactive TUI does not load V2 ./tui entries",
+      "observedAt": 1789698282712
+    },
+    {
+      "id": "EXTRA-MUTATION-EXECUTOR",
+      "area": "executor",
+      "requirement": "mutation detection separates regression from setup failure",
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/mutation-2026-09-18.json"
+      ],
+      "detail": "isolated copy: baseline passed, wrong implementation detected at the assertion, broken setup classified as setup_error, tolerated change passed, main tree unchanged",
+      "observedAt": 1789698282712
     },
     {
       "id": "doctor.jev.live",

@@ -4,11 +4,13 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./tui": "./tui.ts"
   },
   "dependencies": {
     "@jev-warden/contracts": "0.1.0",
     "@jev-warden/core": "0.1.0",
+    "@jev-warden/opencode-tui": "0.1.0",
     "@opencode/plugin": "2.0.7",
     "effect": "4.0.0-rc.112"
   },

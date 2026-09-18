@@ -15,10 +15,12 @@
  *   node fixtures/work-comparison/run.mjs --model deepseek/deepseek-flash --trials 2
  */
 import { spawn } from "node:child_process"
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { createHash } from "node:crypto"
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
+import { policyDigestInput, validatePolicyBundle } from "../../packages/core/src/index.ts"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(here, "../..")
@@ -203,6 +205,15 @@ async function main() {
       : null
   const promotionRecommended = enoughTrials && nonInferior === true && toolCallsBetter === true
 
+  const candidateIdentity =
+    args.candidate === undefined
+      ? null
+      : (() => {
+          const bundle = validatePolicyBundle(JSON.parse(readFileSync(resolve(process.cwd(), args.candidate), "utf8")))
+          const digest = createHash("sha256").update(policyDigestInput(bundle)).digest("hex")
+          return { id: bundle.id, digest, guidance: bundle.guidance.kind }
+        })()
+
   const decision = {
     schemaVersion: "warden.work-comparison/0.1",
     at: Date.now(),
@@ -210,6 +221,7 @@ async function main() {
     task: "find the constant referenced by the test and report the expected notification count",
     expected,
     guidance: GUIDANCE,
+    ...(candidateIdentity === null ? {} : { candidate: candidateIdentity }),
     preRegistered: {
       primaryMetric: "correctness (ANSWER == expected)",
       secondaryMetric: "mean tool calls",
@@ -243,7 +255,10 @@ async function main() {
 
   const outDir = resolve(process.cwd(), args.out ?? `checks/work-comparison/${new Date().toISOString().slice(0, 10)}`)
   mkdirSync(outDir, { recursive: true })
-  writeFileSync(join(outDir, "results.json"), JSON.stringify({ model, trials, results }, null, 2) + "\n")
+  writeFileSync(
+    join(outDir, "results.json"),
+    JSON.stringify({ model, trials, candidate: candidateIdentity, results }, null, 2) + "\n",
+  )
   writeFileSync(join(outDir, "decision.json"), JSON.stringify(decision, null, 2) + "\n")
   console.log(JSON.stringify({ outDir, byArm, decision: decision.decision, reason: decision.reason }, null, 2))
 }

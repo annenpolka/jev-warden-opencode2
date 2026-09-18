@@ -156,6 +156,13 @@ The low answers matched code inspection, so two behaviors were changed rather th
 
 Probabilities are not acceptance: the fixes are confirmed by the Core and server tests (15 + 23) and by code review; the second crosscheck only guided where to look.
 
+A third check covered the new pieces (same session, `checks/jev-live/2026-09-18-fidelity/request-v3.json`):
+
+| assertion | noul | sufficiency | status |
+|---|---|---|---|
+| promotion keeps pointer movement out of candidate generation (design 20.5) | 0.88 | 0.94 | confirmed by reading: the work runner writes only files; `promote.mjs` is the sole pointer mover |
+| mutation classification separates assertion failure from setup failure (design 11.4 / 18.5) | 0.97 | 0.98 | confirmed by execution: `checks/mutation-2026-09-18.json` classifications |
+
 ## Policy lifecycle (executed)
 
 The Lab owns the active pointer; the server plugin applies it per session.
@@ -185,15 +192,32 @@ Run of 2026-09-18 with `deepseek/deepseek-flash`, 8 trials per arm (24 real mode
 
 Decision: **hold** — correctness was non-inferior, but the advisory arm used more tool calls than the observe-only baseline, so the pre-registered adoption rule failed. The earlier 3-trial run is kept for comparison. Artifacts: `checks/work-comparison/2026-09-18/` and `checks/work-comparison/2026-09-18-large/`. A negative result is a valid learning outcome: the candidate is not promoted and stays available for a different task family or a redesigned input.
 
+## Automated promotion, episodes, and the mutation executor (executed)
+
+- `packages/lab/src/promotion.mjs` is the pure gate: a promotion requires `promote_recommended`, `enoughTrials`, and a matching candidate id and digest. `packages/lab/src/promote.mjs` stores the candidate and moves the pointer only when the gate passes; otherwise it appends a `hold` history row and leaves the pointer alone. Candidate generation (the work-comparison runner) never opens the Lab.
+- Executed with the real decision: the 3-trial run with `--candidate` produced a `hold`; `promote.mjs` recorded `hold` in the daily Lab and exported the baseline pointer unchanged (`checks/work-comparison/2026-09-18-promotion-input/promotion.json`).
+- `packages/lab/src/episode.mjs` stores episode files (decision inputs, outcome, resolution) idempotently; `report.mjs` shows episode and candidate counts.
+- `fixtures/executor/run-mutation.mjs` copies the fixture task to an owned temp directory, hashes the main tree before and after, and classifies each mutation: `regression_detected` (assertion failure), `setup_error` (failed before the contract), `tolerated` (contract kept). Receipt: `checks/mutation-2026-09-18.json`; conformance case `EXTRA-MUTATION-EXECUTOR`.
+
+## TUI load finding (executed, blocked on this host)
+
+`EXTRA-TUI-LOAD` runs the real TUI inside tmux (conformance case; pane capture in `checks/tui-pane-2.0.7.txt`). On opencode 2.0.7:
+
+- a local server package's `./tui` export is discovered by the CLI-side loader, where the Keymap provider is absent, so `context.keymap.layer` throws `Keymap.Provider is missing`;
+- the interactive TUI process does not import the `./tui` entry at all (no module-import or setup evidence);
+- `tui.jsonc` entries are V1-style (`tui:` export), as the existing local plugin shows, and expose route/state/lifecycle APIs rather than the V2 keymap/slot API.
+
+The case is recorded as `BLOCKED` rather than passed. Warden's TUI plugin now guards keymap registration so it stays loadable; its command surface is unavailable on this host. Server and CLI paths are unaffected, which is the design's degradation requirement.
+
 ## Not implemented / not executed
 
-- Episode/candidate storage in the Lab (episodes are still files) and outbox ack-back to the plugin: `NOT_RUN`.
-- Automated promotion (the decision and pointer move are operator-driven CLI steps today), artifact re-confirmation after revocation, and retirement flows: `NOT_RUN`.
-- Stale-answer application: no deferred application path exists (reviews are synchronous and stamped), so staleness was not injected.
-- TUI plugin loading and slot rendering: `NOT_RUN` (no interactive TUI session was exercised).
-- Worktree/executor isolation and mutation testing: `NOT_RUN`.
+- TUI command/slot surface on 2.0.7 (`BLOCKED`, see above); a V1-style `tui:` client was not built because it exposes no server client for auth'd RPC.
+- Episode/candidate storage in the Lab is CLI-driven; the loop runner does not write to the Lab automatically yet.
+- Worktree/executor OS isolation: the mutation executor uses a filesystem copy and says so; no sandbox, no host worktree ownership.
 - Event-stream reconnect/dedup semantics, epoch change, multi-client controller lease: `NOT_RUN`.
+- Stale-answer application: no deferred application path exists (reviews are synchronous and stamped).
 - Cold/warm, batch-width and language comparisons for Jev: `NOT_RUN`.
+- Artifact re-confirmation after revocation and bundle retirement flows: `NOT_RUN`.
 
 ## Non-goals held in this change unit
 

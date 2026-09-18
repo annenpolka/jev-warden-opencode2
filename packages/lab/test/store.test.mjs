@@ -8,6 +8,7 @@ import {
   activePolicy,
   policyHistory,
   promotePolicy,
+  recordHold,
   revokePolicy,
   rollbackPolicy,
   saveCandidate,
@@ -131,6 +132,21 @@ test("lab policy: an active candidate is exported with its bundle", () => {
     const readBack = JSON.parse(readFileSync(exportPath, "utf8"))
     assert.equal(readBack.bundleId, "candidate-2")
     assert.deepEqual(readBack.bundle, bundle)
+    db.close()
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test("lab policy: a hold decision records history without moving the pointer", () => {
+  const dir = mkdtempSync(join(tmpdir(), "jw-lab-"))
+  try {
+    const db = openLab(join(dir, "lab.db"))
+    saveCandidate(db, { id: "candidate-3", digest: "digest-3", bundle: { id: "candidate-3" } })
+    recordHold(db, { bundleId: "candidate-3", digest: "digest-3", evaluationRef: "decision-1", reason: "not_recommended" })
+    assert.equal(activePolicy(db).status, "baseline")
+    const history = policyHistory(db)
+    assert.equal(history[0].action, "hold")
     db.close()
   } finally {
     rmSync(dir, { recursive: true, force: true })

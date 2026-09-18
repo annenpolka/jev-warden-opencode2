@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "warden.mutation-receipt/0.1",
+  "at": 1789698282218,
+  "isolation": "filesystem copy under the OS temp directory; not an OS sandbox",
+  "environment": {
+    "node": "v26.0.0",
+    "platform": "darwin"
+  },
+  "task": {
+    "path": "/Users/annenpolka/ghq/github.com/annenpolka/jev-warden-opencode2/fixtures/executor/task",
+    "files": {
+      "src/notify.mjs": "531567be4875dd56213b3f1b521095ff3235556985d511fee2af88a0b6c534e6",
+      "test/notify.test.mjs": "972a2993cdc3eaee279f90de6970e83883ebbc67f1b436fecc2d86da7e75d0dc"
+    }
+  },
+  "baseline": {
+    "exitCode": 0,
+    "durationMs": 123,
+    "passed": true
+  },
+  "mutations": [
+    {
+      "id": "double-send",
+      "kind": "wrong_implementation",
+      "exitCode": 1,
+      "durationMs": 122,
+      "classification": "regression_detected"
+    },
+    {
+      "id": "syntax-error",
+      "kind": "broken_setup",
+      "exitCode": 1,
+      "durationMs": 120,
+      "classification": "setup_error"
+    },
+    {
+      "id": "comment-only",
+      "kind": "tolerated_change",
+      "exitCode": 0,
+      "durationMs": 122,
+      "classification": "tolerated"
+    }
+  ],
+  "cleanup": {
+    "removed": true,
+    "onlyOwnedDirectory": true
+  },
+  "mainUnchanged": true
+}

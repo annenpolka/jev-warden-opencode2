@@ -155,12 +155,21 @@ function updateAck(db, now) {
 
 export function summary(db) {
   const totals = db.prepare(`SELECT COUNT(*) AS events FROM events`).get()
+  const episodes = db.prepare(`SELECT COUNT(*) AS count FROM episodes`).get()
+  const candidates = db.prepare(`SELECT COUNT(*) AS count FROM candidates`).get()
   const types = db.prepare(`SELECT type, COUNT(*) AS count FROM events GROUP BY type ORDER BY count DESC`).all()
   const streams = db.prepare(`SELECT server_id, server_epoch, ack_sequence FROM streams ORDER BY server_id, server_epoch`).all()
   const recent = db
     .prepare(`SELECT id, sequence, type, session_id, observed_at FROM events ORDER BY ingested_at DESC LIMIT 10`)
     .all()
-  return { events: totals.events, types, streams, recent }
+  return {
+    events: totals.events,
+    episodes: episodes.count,
+    candidates: candidates.count,
+    types,
+    streams,
+    recent,
+  }
 }
 
 // ---------------------------------------------------------------- episodes
@@ -265,6 +274,12 @@ export function revokePolicy(db, { digest, reason }, now = Date.now()) {
   db.prepare(`INSERT OR REPLACE INTO revoked_policies (digest, reason, at) VALUES (?, ?, ?)`).run(digest, reason, now)
   appendHistory(db, { bundleId: "revoked", digest, action: "revoke", evaluationRef: reason, now })
   return activePolicy(db)
+}
+
+/** Records an evaluation outcome that did not move the pointer, for audit. */
+export function recordHold(db, { bundleId, digest, evaluationRef, reason }, now = Date.now()) {
+  appendHistory(db, { bundleId, digest, action: "hold", evaluationRef: evaluationRef ?? reason ?? null, now })
+  return policyHistory(db, 5)
 }
 
 /**

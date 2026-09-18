@@ -1,0 +1,42 @@
+{
+  "state": {
+    "design_separation": "--- design 20.5 excerpt:\n### 20.5 評価器を実際に分離する\n\ncandidate generatorは監査fixture、grant、予算上限、active pointer、採用基準へ書き込めない。promptで「書き換えるな」と指示するだけでは分離ではない。別プロセス・権限・volume・限定APIを使う。\n\nWarden Coreのschema checkを通ったことは、candidateの意味が正しい証拠ではない。モデルによるgraderを使う場合もweak labelとして別に監査する。",
+    "promotion_code": "--- promotion gate (promotion.mjs):\n/**\n * Promotion eligibility.\n *\n * Pure decision logic: the Lab moves the active pointer only when the work\n * comparison recommends promotion, ran enough trials, and identifies the same\n * candidate bundle. Everything else records a hold.\n */\nexport function evaluatePromotion({ decision, bundleId, digest }) {\n  if (decision === null || typeof decision !== \"object\") {\n    return { eligible: false, reason: \"decision_unreadable\" }\n  }\n  if (decision.schemaVersion !== \"warden.work-comparison/0.1\") {\n    return { eligible: false, reason: \"unknown_decision_schema\" }\n  }\n  if (decision.decision !== \"promote_recommended\" || decision.promotionRecommended !== true) {\n    return { eligible: false, reason: \"not_recommended\" }\n  }\n  if (decision.comparison?.enoughTrials !== true) {\n    return { eligible: false, reason: \"insufficient_trials\" }\n  }\n  if (decision.candidate?.id !== bundleId) {\n    return { eligible: false, reason: \"candidate_id_mismatch\" }\n  }\n  if (typeof decision.candidate?.digest !== \"string\" || decision.candidate.digest !== digest) {\n    return { eligible: false, reason: \"candidate_digest_mismatch\" }\n  }\n  return { eligible: true, reason: \"recommended\" }\n}\n--- promote CLI (pointer movement):\n  const verdict = evaluatePromotion({ decision, bundleId: bundle.id, digest })\n  const db = openLab(dbPath)\n  let outcome\n  if (verdict.eligible) {\n    saveCandidate(db, { id: bundle.id, digest, bundle })\n    const pointer = promotePolicy(db, {\n      bundleId: bundle.id,\n      digest,\n      evaluationRef: `${decisionPath}#${decision.at ?? \"unknown\"}`,\n    })\n    outcome = { decision: \"promote\", pointer }\n  } else {\n--- work comparison decision output (runner):\n206:  const promotionRecommended = enoughTrials && nonInferior === true && toolCallsBetter === true\n207-\n208-  const candidateIdentity =\n209-    args.candidate === undefined\n210-      ? null\n211-      : (() => {\n212-          const bundle = validatePolicyBundle(JSON.parse(readFileSync(resolve(process.cwd(), args.candidate), \"utf8\")))\n--\n239:    promotionRecommended,\n240-    decision: !enoughTrials\n241-      ? \"hold\"\n242-      : nonInferior === false\n243-        ? \"reject\"\n244:        : promotionRecommended\n245-          ? \"promote_recommended\"\n246-          : \"hold\",\n247-    reason: !enoughTrials\n248-      ? `only ${trials} trials per arm; adoption requires at least ${MIN_TRIALS_FOR_ADOPTION}`\n249-      : nonInferior === false\n250-        ? \"candidate accuracy was lower than baseline\"",
+    "design_mutation": "--- design 11.4 excerpt:",
+    "mutation_code": "mutation後にテストが落ちても、型エラーやsetup障害であれば目的のassertionが回帰を検出した証拠ではない。実行の理由を区別する。\n--- classify function:\nconst ASSERTION_PATTERN = /notifies once per event|AssertionError|Expected values/\nconst SETUP_PATTERN = /SyntaxError|ERR_MODULE_NOT_FOUND|Cannot find module|ERR_UNSUPPORTED|Unexpected token/\n\nfunction classify(run) {\n  if (run.exitCode === 0) return \"tolerated\"\n  const output = `${run.stdout}\\n${run.stderr}`\n  if (ASSERTION_PATTERN.test(output)) return \"regression_detected\"\n  if (SETUP_PATTERN.test(output)) return \"setup_error\"\n  return \"unclassified_failure\"\n}\n--- receipt sample:\n{\n  \"schemaVersion\": \"warden.mutation-receipt/0.1\",\n  \"at\": 1789698153503,\n  \"isolation\": \"filesystem copy under the OS temp directory; not an OS sandbox\",\n  \"environment\": {\n    \"node\": \"v26.0.0\",\n    \"platform\": \"darwin\"\n  },\n  \"task\": {\n    \"path\": \"/Users/annenpolka/ghq/github.com/annenpolka/jev-warden-opencode2/fixtures/executor/task\",\n    \"files\": {\n      \"src/notify.mjs\": \"531567be4875dd56213b3f1b521095ff3235556985d511fee2af88a0b6c534e6\",\n      \"test/notify.test.mjs\": \"972a2993cdc3eaee279f90de6970e83883ebbc67f1b436fecc2d86da7e75d0dc\"\n    }\n  },\n  \"baseline\": {\n    \"exitCode\": 0,\n    \"durationMs\": 121,\n    \"passed\": true\n  },\n  \"mutations\": [\n    {\n      \"id\": \"double-send\",\n      \"kind\": \"wrong_implementation\",\n      \"exitCode\": 1,\n      \"durationMs\": 123,\n      \"classification\": \"regression_detected\"\n    },\n    {\n      \"id\": \"syntax-error\",\n      \"kind\": \"broken_setup\",\n      \"exitCode\": 1,\n      \"durationMs\": 117,\n      \"classification\": \"setup_error\"\n    },\n    {\n      \"id\": \"comment-only\",\n      \"kind\": \"tolerated_change\",\n      \"exitCode\": 0,\n      \"durationMs\": 124,"
+  },
+  "questions": {
+    "promotion_separation_fidelity": {
+      "type": "noul",
+      "instructions": "Does `promotion_code` keep moving the active policy pointer out of candidate generation, requiring a separate evaluation decision as `design_separation` describes?",
+      "criteria": {
+        "true": "The decision to move the pointer is computed from a separate evaluation artifact and the candidate-generation path does not move it",
+        "false": "Candidate generation or its inputs can move the active pointer directly"
+      }
+    },
+    "promotion_sufficiency": {
+      "type": "noul",
+      "instructions": "Does the shown material include both the gate that evaluates the decision and the code that moves the pointer, so their separation can be judged?",
+      "criteria": {
+        "true": "The material contains the evaluation gate and the pointer movement",
+        "false": "One of the two is missing from the material"
+      }
+    },
+    "mutation_classification_fidelity": {
+      "type": "noul",
+      "instructions": "Does `mutation_code` distinguish an assertion failure from a setup failure instead of reporting both as regression detection, as `design_mutation` describes?",
+      "criteria": {
+        "true": "The classification separates an assertion failure from a run that failed before the contract was exercised",
+        "false": "Any failing run is classified the same way or setup failures count as detection"
+      }
+    },
+    "mutation_sufficiency": {
+      "type": "noul",
+      "instructions": "Does `mutation_code` show how a failing test output is classified into categories?",
+      "criteria": {
+        "true": "The material shows the classification inputs and categories",
+        "false": "The material omits the classification"
+      }
+    }
+  }
+}

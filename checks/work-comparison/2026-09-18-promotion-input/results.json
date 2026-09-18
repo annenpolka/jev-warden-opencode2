@@ -1,0 +1,44 @@
+{
+  "model": "deepseek/deepseek-flash",
+  "trials": 1,
+  "candidate": {
+    "id": "candidate-specific-definition-guidance-v1",
+    "digest": "db9fc1050a89453948292b6464adc42bfaa89e12276dc445d124fd4d46b35379",
+    "guidance": "definition-needed"
+  },
+  "results": [
+    {
+      "arm": "control",
+      "trial": 1,
+      "exitCode": 0,
+      "sessionID": "ses_f4dad30dbffe6HPBmGBTIvkG0S",
+      "answer": 3,
+      "correct": true,
+      "toolCalls": 4,
+      "durationMs": 8779,
+      "outputSample": "rts:\n\n```ts\nexpect(calls.length).toBe(EXPECTED_CALLS)\n```\n\nand the value written to `config/limits.ts` (line 75) is:\n\n```ts\nexport const EXPECTED_CALLS = ${expected}\n```\n\nwhere `const expected = \"3\"` (line 45). The same sentinel is what the harness scores against (`correct: Number(match[1]) === Number(expected)`).\n\nSo the expected total number of notifications asserted by the test is 3.\n\nANSWER: 3"
+    },
+    {
+      "arm": "baseline",
+      "trial": 1,
+      "exitCode": 0,
+      "sessionID": "ses_f4dad0e89ffe3pAh6mYusvGu6Z",
+      "answer": 3,
+      "correct": true,
+      "toolCalls": 3,
+      "durationMs": 4745,
+      "outputSample": "The project is the jev-warden work-comparison harness. The relevant fixture is `fixtures/work-comparison/run.mjs`:\n\n- It generates `test/notify.test.ts`, which asserts `expect(calls.length).toBe(EXPECTED_CALLS)`.\n- It writes `config/limits.ts` as `export const EXPECTED_CALLS = ${expected}`.\n- `expected` is pinned at line 45 to `\"3\"`.\n\nSo the test asserts a total of 3 notifications.\n\nANSWER: 3"
+    },
+    {
+      "arm": "candidate",
+      "trial": 1,
+      "exitCode": 0,
+      "sessionID": "ses_f4dacfc01ffe5mMN61IgBgJa5d",
+      "answer": 3,
+      "correct": true,
+      "toolCalls": 6,
+      "durationMs": 7332,
+      "outputSample": "rk-comparison/run.mjs` (line 45), `const expected = \"3\"` is written into the generated scratch project's `config/limits.ts` as `export const EXPECTED_CALLS = 3`. The generated test `test/notify.test.ts` asserts `expect(calls.length).toBe(EXPECTED_CALLS)`, so the asserted total is 3. This is corroborated by the recorded checks under `checks/jev-live/...` and `checks/work-comparison/...`.\n\nANSWER: 3"
+    }
+  ]
+}
