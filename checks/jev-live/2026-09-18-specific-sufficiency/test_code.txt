@@ -1,0 +1,8 @@
+import { test, expect } from "vitest"
+import { notifyUser } from "../src/notify"
+
+test("notifies the user once per event", async () => {
+  const calls: string[] = []
+  await notifyUser({ id: "e1" }, { send: async (message) => calls.push(message) })
+  expect(calls.length).toBe(EXPECTED_CALLS)
+})

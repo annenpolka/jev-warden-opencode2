@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "warden.episode/0.1",
+  "episodeId": "ep_specific_sufficiency_842112e9f500",
+  "mode": "live",
+  "decisionTime": {
+    "at": 1789693873413,
+    "definitionPresent": false,
+    "observation": {
+      "source": "warden_live_transport",
+      "status": "completed",
+      "model": "jev-1.13.0",
+      "answers": {
+        "expected_calls_value_visible": {
+          "type": "noul",
+          "noul": 0.04
+        },
+        "expected_total_is_three": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "usage": {
+        "inputTokens": 572,
+        "outputTokens": 42
+      },
+      "requestDigest": "9839b417b15f1d4500a86f7f16014786626fb0107a00a09703fcfb1a665f3d2f",
+      "stateDigest": "758b60bd5978903b454792121cadde034d3eb10b33a3767565ce0149a2e10fac",
+      "questionsDigest": "252717a5b679eeb95cc83f287e8fadaaab08477424ba3bdb8526ec1ad4ebc596",
+      "at": 1789693873413,
+      "requestsUsed": 1
+    },
+    "inputs": {
+      "testCodeDigest": "e5dc1bed1d28db26b6d2f25b33113f1ced77a893c2e6c004033aa11043099c6e",
+      "definitionsDigest": "98a7b49fd5299e2c17822519cbee3edce755d612d5562355ce90b9c78115ec22",
+      "questionsDigest": "252717a5b679eeb95cc83f287e8fadaaab08477424ba3bdb8526ec1ad4ebc596"
+    },
+    "sufficiency": 0.04,
+    "claim": 0.02
+  },
+  "retrieval": {
+    "at": 1789693874068,
+    "sourceRef": "fixture:checks/jev-live/2026-09-18-specific-sufficiency/b-with-definition/definitions.txt",
+    "digest": "0391a039c7c0105180e960adf60c5104dea56624fb2f710aca873c52fc6de36d",
+    "lineRef": "L2",
+    "excerpt": "export const EXPECTED_CALLS = 3",
+    "inspectedScope": "complete_declared_scope",
+    "hasMissingReference": false
+  },
+  "outcome": {
+    "at": 1789693874068,
+    "definitionPresent": true,
+    "observation": {
+      "source": "warden_live_transport",
+      "status": "completed",
+      "model": "jev-1.13.0",
+      "answers": {
+        "expected_calls_value_visible": {
+          "type": "noul",
+          "noul": 0.86
+        },
+        "expected_total_is_three": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "usage": {
+        "inputTokens": 588,
+        "outputTokens": 42
+      },
+      "requestDigest": "70df93b0356fbfbf24fb366980dd3ded6d649652331537c8a35d26c4415832f2",
+      "stateDigest": "cb45a6681900f461bb20b5e9702a7994041343c2036a133a069a7cf746635111",
+      "questionsDigest": "252717a5b679eeb95cc83f287e8fadaaab08477424ba3bdb8526ec1ad4ebc596",
+      "at": 1789693874068,
+      "requestsUsed": 1
+    },
+    "sufficiency": 0.86,
+    "claim": 0.96
+  },
+  "resolution": {
+    "state": "definition_gap_confirmed",
+    "claimLabel": "supported_after_definition",
+    "labelSource": "weak_model_label",
+    "note": "Probabilities are not acceptance. The definition value in the fixture is authored synthetic material, not an independent source of truth."
+  }
+}

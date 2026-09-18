@@ -1,0 +1,10 @@
+// test/constants.ts
+export const EXPECTED_CALLS = 3
+
+// src/notify.ts
+export async function notifyUser(
+  event: { id: string },
+  transport: { send: (message: string) => Promise<void> },
+) {
+  await transport.send(`event:${event.id}`)
+}

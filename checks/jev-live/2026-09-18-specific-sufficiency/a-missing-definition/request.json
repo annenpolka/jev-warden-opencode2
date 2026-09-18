@@ -1,0 +1,24 @@
+{
+  "state": {
+    "test_code": "import { test, expect } from \"vitest\"\nimport { notifyUser } from \"../src/notify\"\n\ntest(\"notifies the user once per event\", async () => {\n  const calls: string[] = []\n  await notifyUser({ id: \"e1\" }, { send: async (message) => calls.push(message) })\n  expect(calls.length).toBe(EXPECTED_CALLS)\n})",
+    "definitions": "// src/notify.ts\nexport async function notifyUser(\n  event: { id: string },\n  transport: { send: (message: string) => Promise<void> },\n) {\n  await transport.send(`event:${event.id}`)\n}"
+  },
+  "questions": {
+    "expected_calls_value_visible": {
+      "type": "noul",
+      "instructions": "Do `test_code` and `definitions` state the actual value that EXPECTED_CALLS has, directly rather than only by the constant name?",
+      "criteria": {
+        "true": "The material contains the definition of EXPECTED_CALLS together with its value",
+        "false": "The definition or its value is absent, or only the name is shown"
+      }
+    },
+    "expected_total_is_three": {
+      "type": "noul",
+      "instructions": "Do `test_code` and `definitions` support the statement that the expected total number of recorded calls asserted by the test is 3?",
+      "criteria": {
+        "true": "The value 3 can be read from the shown material as the expected total",
+        "false": "The expected total cannot be determined as 3 from the shown material"
+      }
+    }
+  }
+}

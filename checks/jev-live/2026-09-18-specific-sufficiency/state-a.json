@@ -1,0 +1,4 @@
+{
+  "test_code": "import { test, expect } from \"vitest\"\nimport { notifyUser } from \"../src/notify\"\n\ntest(\"notifies the user once per event\", async () => {\n  const calls: string[] = []\n  await notifyUser({ id: \"e1\" }, { send: async (message) => calls.push(message) })\n  expect(calls.length).toBe(EXPECTED_CALLS)\n})\n",
+  "definitions": "// src/notify.ts\nexport async function notifyUser(\n  event: { id: string },\n  transport: { send: (message: string) => Promise<void> },\n) {\n  await transport.send(`event:${event.id}`)\n}\n"
+}

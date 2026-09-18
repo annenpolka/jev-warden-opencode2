@@ -70,13 +70,42 @@ The conformance runner needs `opencode` on `PATH`. It creates and removes its ow
 
 Key host facts that changed the design's assumptions are listed in `checks/host-baseline-2.0.7.json` under `observedContracts`, including: local plugin directories needed a root `index.ts` entry; a config deny removes the tool from the model-visible list and produces no `execute.after`; the permission reply body requires `{decision}`; and `execute.before` precedes permission evaluation.
 
+## Live Jev (first Phase 2 slice, executed)
+
+`packages/opencode-server/src/jev-live.ts` is Warden's own transport:
+
+- reads the key at call time from the OS credential store (`security find-generic-password -s typesafe-api -w` on macOS); the key is never stored, logged, or returned in a result;
+- sends one narrow `{state, questions, model}` request per call and validates every answer field (noul in `[0,1]`, choice probabilities finite/non-negative/sum≈1, no missing answers); invalid values become `invalid_response`, never silent normalisation;
+- enforces a per-run request budget and a timeout, and keeps `unavailable`, `invalid_response` and `budget_exhausted` distinct;
+- never changes the endpoint on an authentication failure and never turns a probability into an authorization decision.
+
+`fixtures/jev-live/run-specific-sufficiency.mjs` runs the first "one thread" and records an Episode:
+
+1. judge a test snippet whose expected-value definition is not shown;
+2. retrieve the definition through a scope-checked source read (digest + line reference);
+3. re-judge with the definition present;
+4. record decision-time inputs and the later outcome separately, with raw probabilities and `labelSource: "weak_model_label"`.
+
+Evidence (2026-09-18, synthetic fixture only — no user data):
+
+| run | sufficiency (definition visible) | claim (total is 3) |
+|---|---|---|
+| jev-crosscheck helper, definitions absent | 0.04 | 0.02 |
+| jev-crosscheck helper, `EXPECTED_CALLS = 3` present | 0.88 | 0.96 |
+| Warden live transport, definitions absent | 0.04 | 0.02 |
+| Warden live transport, `EXPECTED_CALLS = 3` present | 0.86 | 0.96 |
+
+Files: `checks/jev-live/2026-09-18-specific-sufficiency/` (`request.json` / `response.json` per variant, `state-*.json`, `transport-*.json`, `episode-live.json`, `episode-replay.json`). Model returned: `jev-1.13.0`.
+
+The server plugin does **not** call Jev yet: the transport is wired through an experiment runner only, and no probe fires from real sessions, so no repository or session content has been sent. Enabling it in the plugin needs a trigger, scope and budget decision first.
+
 ## Not implemented / not executed
 
-- Live Jev evaluation, Lab handshake/outbox, and any semantic probe: `NOT_RUN` (no credential or endpoint was used).
+- Live Jev evaluation from the server plugin, Lab handshake/outbox, and learned policy application: `NOT_RUN` (only the standalone experiment above used Jev).
 - TUI plugin loading and slot rendering: `NOT_RUN` (no interactive TUI session was exercised).
 - Worktree/executor isolation, mutation testing, candidate generation, promotion/rollback loops: `NOT_RUN` (roadmap Phases 2–4).
 - Event-stream reconnect/dedup semantics, epoch change, multi-client controller lease: `NOT_RUN`.
-- Real provider models: every model call in testing went to the local mock.
+- Real provider models: every OpenCode model call in testing went to the local mock.
 
 ## Non-goals held in this change unit
 

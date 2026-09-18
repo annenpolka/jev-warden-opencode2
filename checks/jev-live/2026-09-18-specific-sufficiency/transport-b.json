@@ -1,0 +1,23 @@
+{
+  "status": "completed",
+  "model": "jev-1.13.0",
+  "answers": {
+    "expected_calls_value_visible": {
+      "type": "noul",
+      "noul": 0.86
+    },
+    "expected_total_is_three": {
+      "type": "noul",
+      "noul": 0.96
+    }
+  },
+  "usage": {
+    "inputTokens": 588,
+    "outputTokens": 42
+  },
+  "requestDigest": "70df93b0356fbfbf24fb366980dd3ded6d649652331537c8a35d26c4415832f2",
+  "stateDigest": "cb45a6681900f461bb20b5e9702a7994041343c2036a133a069a7cf746635111",
+  "questionsDigest": "252717a5b679eeb95cc83f287e8fadaaab08477424ba3bdb8526ec1ad4ebc596",
+  "startedAt": 1789693874068,
+  "finishedAt": 1789693874338
+}
