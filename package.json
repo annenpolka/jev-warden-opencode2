@@ -1,0 +1,20 @@
+{
+  "name": "jev-warden-opencode2",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "fixtures/host-contracts/probe"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "node --test \"packages/core/test/*.test.ts\"",
+    "conformance": "node fixtures/host-contracts/run-host-conformance.mjs --out checks/host-conformance-2.0.7.json",
+    "doctor": "node packages/doctor/src/main.ts"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.2",
+    "typescript": "5.8.2"
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "schemaVersion": "warden.doctor/0.1",
+  "reportKind": "executed-partial",
+  "generatedAt": 1789693477667,
+  "baseline": {
+    "repository": "anomalyco/opencode",
+    "commit": "a2594ddefb6557ecf7e7edb3e30ea50c71df8519",
+    "sourcePackageName": "@opencode/plugin",
+    "sourcePackageVersion": "2.0.7"
+  },
+  "installed": {
+    "cliVersion": "2.0.7",
+    "serverVersion": "2.0.7",
+    "channel": null,
+    "pluginPackageVersion": "2.0.7",
+    "pluginPackageIntegrity": "sha512-/7YNnwc8lghy9HMF53bfmdKccAjTmu8g/91ZpiRDG9OJAK+tM6RsWZu5B9513xpgDW48AKYalb6KnyqN7cVFPw==",
+    "binaryPath": "/opt/homebrew/bin/opencode",
+    "binarySha256": "72144759821a20bef7684b16d7b4776564d6ea620ccb7ee7d6ddef874af4d47e",
+    "runtime": "node v26.0.0",
+    "platform": "darwin",
+    "platformRelease": "25.6.0"
+  },
+  "checks": [
+    {
+      "id": "OC2-001",
+      "area": "host",
+      "requirement": "初回loadとcleanup: 登録を解除し、元のhost処理を維持する",
+      "status": "PASSED",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-IbeC9j/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-IbeC9j/opencode.json"
+      ],
+      "detail": "load+cleanup+reload on opencode 2.0.7; plugin state active",
+      "observedAt": 1789693477211
+    },
+    {
+      "id": "OC2-007",
+      "area": "context",
+      "requirement": "履歴readback: 一時guidanceがcanonical user意思へ変わらない",
+      "status": "PASSED",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-6Me24H/mock.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-6Me24H/warden.jsonl"
+      ],
+      "detail": "temporary system guidance reached the model call and was absent from session readback",
+      "observedAt": 1789693477211
+    },
+    {
+      "id": "OC2-004",
+      "area": "prompt",
+      "requirement": "先行pluginがdraftを書換え: 観測draftを原文と偽らない",
+      "status": "PASSED",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-3pOWa0/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-3pOWa0/warden.jsonl"
+      ],
+      "detail": "hook order honoured config order: warden recorded the rewritten draft (observed_prompt_draft)",
+      "observedAt": 1789693477211
+    },
+    {
+      "id": "OC2-017",
+      "area": "permission",
+      "requirement": "permissionとexecute.before順序: 認可と実行対象の相違を検出する",
+      "status": "PASSED",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iLjFwB/probe.jsonl"
+      ],
+      "detail": "on the tested host, execute.before ran before permission.evaluate; before is a request observation, not an authorization",
+      "observedAt": 1789693477211
+    },
+    {
+      "id": "OC2-009",
+      "area": "tool",
+      "requirement": "成功した実toolとWarden障害: tool成功をWardenエラーへ変えない",
+      "status": "PASSED",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-dYNDhV/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-dYNDhV/opencode.json"
+      ],
+      "detail": "warden recording failed without changing the successful tool result; durability degraded was reported",
+      "observedAt": 1789693477211
+    },
+    {
+      "id": "OC2-011",
+      "area": "tool",
+      "requirement": "before以降にinputが変更: requested/effectiveを混同しない",
+      "status": "PASSED",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-nL5gMO/probe.jsonl"
+      ],
+      "detail": "a later hook changed the effective input; the requested and executed commands differed",
+      "observedAt": 1789693477211
+    },
+    {
+      "id": "OC2-016",
+      "area": "permission",
+      "requirement": "元のaskとWarden: askをallowへ変えない",
+      "status": "PASSED",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-AzAScQ/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-AzAScQ/warden.jsonl"
+      ],
+      "detail": "ask stayed a pending request while Warden abstained; execution required an explicit user reply",
+      "observedAt": 1789693477211
+    },
+    {
+      "id": "OC2-015",
+      "area": "permission",
+      "requirement": "config denyの最終優先順位: Wardenによる弱化なし、他pluginとの最終動作を確認",
+      "status": "PASSED",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-Be4fZx/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-Be4fZx/mock.jsonl"
+      ],
+      "detail": "configured deny skipped the permission hook and produced no side effect; after hook absent (a missing after must stay outcome_unknown)",
+      "observedAt": 1789693477211
+    },
+    {
+      "id": "HOST-RPC",
+      "area": "rpc",
+      "requirement": "typed RPC register/call: read-only status method",
+      "status": "PASSED",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-PaADxL/probe.jsonl"
+      ],
+      "detail": "typed rpc call returned storageCounter=108",
+      "observedAt": 1789693477211
+    },
+    {
+      "id": "HOST-STORAGE",
+      "area": "storage",
+      "requirement": "plugin storage survives location reload",
+      "status": "PASSED",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-oq5bze/probe.jsonl"
+      ],
+      "detail": "plugin storage counter persisted across a location reload",
+      "observedAt": 1789693477211
+    },
+    {
+      "id": "doctor.jev.live",
+      "area": "jev",
+      "requirement": "実Jev接続で観測・検証を行う",
+      "status": "NOT_RUN",
+      "evidenceRefs": [],
+      "detail": "no live Jev credential was used"
+    },
+    {
+      "id": "doctor.lab.handshake",
+      "area": "storage",
+      "requirement": "Lab handshakeとoutbox再送を確認する",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "doctor.tui.load",
+      "area": "tui",
+      "requirement": "実TUIでのplugin loadとslot表示を確認する",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "doctor.executor.sandbox",
+      "area": "executor",
+      "requirement": "OS隔離executorでmutation検証を行う",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    },
+    {
+      "id": "doctor.learning.promotion",
+      "area": "learning",
+      "requirement": "候補生成から採用・退役までを実行する",
+      "status": "NOT_RUN",
+      "evidenceRefs": []
+    }
+  ],
+  "aggregate": "PARTIAL",
+  "notes": [
+    "conformance run: 2.0.7",
+    "artifact results: /Users/annenpolka/ghq/github.com/annenpolka/jev-warden-opencode2/checks/host-conformance-2.0.7.json"
+  ]
+}

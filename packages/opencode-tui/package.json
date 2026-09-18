@@ -1,0 +1,19 @@
+{
+  "name": "@jev-warden/opencode-tui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/tui.ts",
+    "./tui": "./src/tui.ts"
+  },
+  "dependencies": {
+    "@jev-warden/contracts": "0.1.0",
+    "@opencode/client": "2.0.7",
+    "@opencode/plugin": "2.0.7",
+    "effect": "4.0.0-rc.112"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}

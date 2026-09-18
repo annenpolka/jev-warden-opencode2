@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "warden.host-baseline/0.1",
+  "capturedAt": 1789693599747,
+  "installedHost": {
+    "cliVersionRaw": "opencode v2.0.7",
+    "binaryPath": "/opt/homebrew/bin/opencode",
+    "binarySha256": "72144759821a20bef7684b16d7b4776564d6ea620ccb7ee7d6ddef874af4d47e",
+    "runtime": "node v26.0.0",
+    "bun": "1.4.0",
+    "platform": "darwin",
+    "platformRelease": "25.6.0"
+  },
+  "publishedPluginPackage": {
+    "name": "@opencode/plugin",
+    "version": "2.0.7",
+    "lockIntegrity": "sha512-/7YNnwc8lghy9HMF53bfmdKccAjTmu8g/91ZpiRDG9OJAK+tM6RsWZu5B9513xpgDW48AKYalb6KnyqN7cVFPw==",
+    "note": "Typechecking and the loaded fixture/warden plugins used this published package. The compiled CLI bundles its own copy; the binary package version is not directly observable."
+  },
+  "designBaseline": {
+    "repository": "anomalyco/opencode",
+    "commit": "a2594ddefb6557ecf7e7edb3e30ea50c71df8519",
+    "sourcePackageName": "@opencode/plugin",
+    "sourcePackageVersion": "2.0.7"
+  },
+  "typeSurface": {
+    "dist/effect/plugin.d.ts": "b2464f7ccd3fe981c8523d1abf6f9ed0f2b47ba88874ac3c83ef44254636dbca",
+    "dist/effect/session.d.ts": "6bff4b99c4476f6f1e30516e88274423cdab196069ee5ca28f12bc931c59f1a0",
+    "dist/effect/tool.d.ts": "724bb3b081dba426ef6739b585093d2600c3a5179329e7ee4eacdb548134146f",
+    "dist/effect/permission.d.ts": "9f89191edcda5d0c6733b04b66939aa6ba3c8da61a61b4a6477ab0643d6a62dc",
+    "dist/effect/rpc.d.ts": "f57174ca2b117e02621bb85359611d3e6b199a8c4143596a0d6bffddbf3c2b84",
+    "dist/effect/storage.d.ts": "956504db7405872d9ec39083343d7e76dba82831cd93dd0ebc921d5b4c9fedc8",
+    "dist/promise/index.d.ts": "e8d450e10ed16d089e242ede4099e9f513bc376d1bce3a3126a9efc1d89a1842",
+    "dist/tui/plugin.d.ts": "0349ed706c741103b5ba0a3565f17936e5e1fee51b448e183ef19ed06e354297",
+    "dist/tui/context.d.ts": "7aab808f136ae85c7b2e4bebd88a0c72a81e111fb47290ac5b284ac5ce636570"
+  },
+  "conformance": {
+    "file": "checks/host-conformance-2.0.7.json",
+    "cliVersion": "2.0.7",
+    "serverVersion": "2.0.7",
+    "caseCount": 10,
+    "failed": 0
+  },
+  "observedContracts": [
+    {
+      "id": "HOST-PLUGIN-DISCOVERY",
+      "statement": "`.opencode/plugins/<dir>/index.{js,ts}` under the project is discovered after the location boots; activation and teardown run on POST /api/location/reload. A plugin directory referenced from config `plugins` needed a root index.ts entry in 2.0.7; package.json exports alone was not used for local directory loading.",
+      "evidence": [
+        "checks/host-conformance-2.0.7.json#OC2-001",
+        "session scratch probe on opencode 2.0.7"
+      ]
+    },
+    {
+      "id": "HOST-PLUGIN-RESOLUTION",
+      "statement": "A local plugin must resolve `@opencode/plugin` itself (for example from an ancestor node_modules). A resolution failure shows as plugin state `failed` with a `ref`, and the host keeps running.",
+      "evidence": [
+        "observed error ref err_be4931e6 on opencode 2.0.7",
+        "checks/host-conformance-2.0.7.json#OC2-001"
+      ]
+    },
+    {
+      "id": "HOST-PROMPT-ORDER",
+      "statement": "Prompt hooks run in plugin registration order (config order). A later plugin observes an earlier plugin's rewrite; the host observed and persisted the rewritten text, so a recorded draft must not be labelled as the original user request.",
+      "evidence": [
+        "checks/host-conformance-2.0.7.json#OC2-004"
+      ]
+    },
+    {
+      "id": "HOST-CONTEXT-EPHEMERAL",
+      "statement": "A system part appended in the context hook reached the outgoing model request and was absent from session readback.",
+      "evidence": [
+        "checks/host-conformance-2.0.7.json#OC2-007"
+      ]
+    },
+    {
+      "id": "HOST-BEFORE-VS-PERMISSION",
+      "statement": "On 2.0.7, tool execute.before runs before permission evaluation for allow and ask decisions. A requested call observed in before is not proof of authorization or dispatch.",
+      "evidence": [
+        "checks/host-conformance-2.0.7.json#OC2-017",
+        "checks/host-conformance-2.0.7.json#OC2-016"
+      ]
+    },
+    {
+      "id": "HOST-DENY-SHAPE",
+      "statement": "A configured deny did not invoke the permission hook. The denied tool was absent from the session tool list, the call produced a tool error result (\"No tool named ... is currently available\"), no execute.after hook ran, and no side effect occurred.",
+      "evidence": [
+        "checks/host-conformance-2.0.7.json#OC2-015"
+      ]
+    },
+    {
+      "id": "HOST-INPUT-MUTATION",
+      "statement": "A later execute.before hook can replace tool input; execution used the mutated value. Requested input and effective input must be recorded separately.",
+      "evidence": [
+        "checks/host-conformance-2.0.7.json#OC2-011"
+      ]
+    },
+    {
+      "id": "HOST-ASK-REPLY",
+      "statement": "An ask decision produced a pending permission request. A plugin that abstained left the request pending; execution required an explicit reply. The reply body in 2.0.7 requires `{decision}` (not `reply` as some docs show).",
+      "evidence": [
+        "checks/host-conformance-2.0.7.json#OC2-016",
+        "host API error: Missing key at [\"decision\"]"
+      ]
+    },
+    {
+      "id": "HOST-RPC",
+      "statement": "ctx.rpc.register accepted a JSON Schema contract; POST /api/rpc/{rpcId}/{method} with body {input} returned {output}.",
+      "evidence": [
+        "checks/host-conformance-2.0.7.json#HOST-RPC"
+      ]
+    },
+    {
+      "id": "HOST-STORAGE",
+      "statement": "Plugin-scoped storage persisted across a location reload.",
+      "evidence": [
+        "checks/host-conformance-2.0.7.json#HOST-STORAGE"
+      ]
+    },
+    {
+      "id": "HOST-SERVER-API-AUTH",
+      "statement": "The standalone server printed a `server password`; requests authenticated with HTTP Basic (`opencode:<password>`). API routes live under /api and the OpenAPI document is served at /openapi.json.",
+      "evidence": [
+        "scratch host on opencode 2.0.7"
+      ]
+    }
+  ],
+  "unverified": [
+    "TUI plugin loading and slot rendering (no interactive TUI session was run).",
+    "Event stream delivery guarantees and reconnect behavior.",
+    "Worktree/executor/OS isolation behavior.",
+    "Live Jev and Lab connectivity.",
+    "Behavior of the host's bundled plugin implementation version beyond the version string 2.0.7."
+  ]
+}

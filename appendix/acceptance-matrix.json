@@ -1,6 +1,6 @@
 {
   "schemaVersion": "warden.acceptance-plan/0.1",
-  "runtimeTestsExecuted": false,
+  "runtimeTestsExecuted": true,
   "cases": [
     {
       "id": "OC2-001",
@@ -8,8 +8,11 @@
       "scenario": "初回loadとcleanup",
       "requiredInvariant": "登録を解除し、元のhost処理を維持する",
       "phase": "0",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#OC2-001"
+      ],
+      "statusNote": "opencode 2.0.7 実機。location reloadでfinalizerと再loadを確認。"
     },
     {
       "id": "OC2-002",
@@ -35,8 +38,11 @@
       "scenario": "先行pluginがdraftを書換え",
       "requiredInvariant": "観測draftを原文と偽らない",
       "phase": "0",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#OC2-004"
+      ],
+      "statusNote": "config順で後段pluginの書換えをWardenが観測。observed_prompt_draftとして記録。"
     },
     {
       "id": "OC2-005",
@@ -62,8 +68,11 @@
       "scenario": "履歴readback",
       "requiredInvariant": "一時guidanceがcanonical user意思へ変わらない",
       "phase": "0",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#OC2-007"
+      ],
+      "statusNote": "context追加がmodel requestへ届き、session readbackに残らないことを実機確認。"
     },
     {
       "id": "OC2-008",
@@ -80,8 +89,11 @@
       "scenario": "成功した実toolとJev障害",
       "requiredInvariant": "tool成功をWardenエラーへ変えない",
       "phase": "0",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#OC2-009"
+      ],
+      "statusNote": "WardenのprobeLog書込み失敗時もtool結果不変・durability degraded表示を確認。実Jev障害は未実施。"
     },
     {
       "id": "OC2-010",
@@ -98,8 +110,11 @@
       "scenario": "before以降にinputが変更",
       "requiredInvariant": "requested/effectiveを混同しない",
       "phase": "0",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#OC2-011"
+      ],
+      "statusNote": "後段pluginのinput置換が実行に反映。requested/effective分離の実機材料。"
     },
     {
       "id": "OC2-012",
@@ -134,8 +149,11 @@
       "scenario": "config denyの最終優先順位",
       "requiredInvariant": "Wardenによる弱化なし、他pluginとの最終動作を確認",
       "phase": "0",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#OC2-015"
+      ],
+      "statusNote": "config denyはhook非呼出、tool一覧から除外、tool error、execute.afterなし、副作用なし。"
     },
     {
       "id": "OC2-016",
@@ -143,8 +161,11 @@
       "scenario": "元のaskとJev高確率",
       "requiredInvariant": "askをallowへ変えない",
       "phase": "0",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#OC2-016"
+      ],
+      "statusNote": "askはpendingのまま。Wardenはabstainしeffectを変更せず、明示reply後に実行。"
     },
     {
       "id": "OC2-017",
@@ -152,8 +173,11 @@
       "scenario": "permissionとexecute.before順序",
       "requiredInvariant": "認可と実行対象の相違を検出する",
       "phase": "0",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#OC2-017"
+      ],
+      "statusNote": "execute.beforeがpermission.evaluateより先に走ることを実機確認。beforeを認可証拠にしない根拠。"
     },
     {
       "id": "OC2-018",
@@ -434,5 +458,18 @@
       "status": "NOT_RUN",
       "evidenceRefs": []
     }
+  ],
+  "executedAgainst": {
+    "host": "opencode 2.0.7 (Homebrew install)",
+    "date": "2026-09-18",
+    "conformance": "checks/host-conformance-2.0.7.json",
+    "doctor": "checks/doctor.2.0.7.json",
+    "baseline": "checks/host-baseline-2.0.7.json",
+    "modelCalls": "local OpenAI-compatible mock only (127.0.0.1); no external API spend"
+  },
+  "notes": [
+    "PASSED entries cite checks/host-conformance-2.0.7.json and were executed against the installed host.",
+    "NOT_RUN entries remain not executed; do not read the changed runtimeTestsExecuted flag as full coverage.",
+    "statusNote records the exact scope of each executed case, including what was not exercised."
   ]
 }

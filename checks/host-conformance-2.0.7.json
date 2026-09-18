@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "warden.host-conformance/0.1",
+  "host": {
+    "cliVersion": "2.0.7",
+    "opencodeVersionFromServer": "2.0.7"
+  },
+  "startedAt": 1789693457534,
+  "finishedAt": 1789693477211,
+  "cases": [
+    {
+      "id": "OC2-001",
+      "area": "host",
+      "requirement": "初回loadとcleanup: 登録を解除し、元のhost処理を維持する",
+      "status": "PASSED",
+      "detail": "load+cleanup+reload on opencode 2.0.7; plugin state active",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-IbeC9j/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-IbeC9j/opencode.json"
+      ],
+      "observedAt": 1789693459224
+    },
+    {
+      "id": "OC2-007",
+      "area": "context",
+      "requirement": "履歴readback: 一時guidanceがcanonical user意思へ変わらない",
+      "status": "PASSED",
+      "detail": "temporary system guidance reached the model call and was absent from session readback",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-6Me24H/mock.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-6Me24H/warden.jsonl"
+      ],
+      "observedAt": 1789693461401
+    },
+    {
+      "id": "OC2-004",
+      "area": "prompt",
+      "requirement": "先行pluginがdraftを書換え: 観測draftを原文と偽らない",
+      "status": "PASSED",
+      "detail": "hook order honoured config order: warden recorded the rewritten draft (observed_prompt_draft)",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-3pOWa0/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-3pOWa0/warden.jsonl"
+      ],
+      "observedAt": 1789693463573
+    },
+    {
+      "id": "OC2-017",
+      "area": "permission",
+      "requirement": "permissionとexecute.before順序: 認可と実行対象の相違を検出する",
+      "status": "PASSED",
+      "detail": "on the tested host, execute.before ran before permission.evaluate; before is a request observation, not an authorization",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iLjFwB/probe.jsonl"
+      ],
+      "observedAt": 1789693465729
+    },
+    {
+      "id": "OC2-009",
+      "area": "tool",
+      "requirement": "成功した実toolとWarden障害: tool成功をWardenエラーへ変えない",
+      "status": "PASSED",
+      "detail": "warden recording failed without changing the successful tool result; durability degraded was reported",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-dYNDhV/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-dYNDhV/opencode.json"
+      ],
+      "observedAt": 1789693467867
+    },
+    {
+      "id": "OC2-011",
+      "area": "tool",
+      "requirement": "before以降にinputが変更: requested/effectiveを混同しない",
+      "status": "PASSED",
+      "detail": "a later hook changed the effective input; the requested and executed commands differed",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-nL5gMO/probe.jsonl"
+      ],
+      "observedAt": 1789693470012
+    },
+    {
+      "id": "OC2-016",
+      "area": "permission",
+      "requirement": "元のaskとWarden: askをallowへ変えない",
+      "status": "PASSED",
+      "detail": "ask stayed a pending request while Warden abstained; execution required an explicit user reply",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-AzAScQ/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-AzAScQ/warden.jsonl"
+      ],
+      "observedAt": 1789693472219
+    },
+    {
+      "id": "OC2-015",
+      "area": "permission",
+      "requirement": "config denyの最終優先順位: Wardenによる弱化なし、他pluginとの最終動作を確認",
+      "status": "PASSED",
+      "detail": "configured deny skipped the permission hook and produced no side effect; after hook absent (a missing after must stay outcome_unknown)",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-Be4fZx/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-Be4fZx/mock.jsonl"
+      ],
+      "observedAt": 1789693474374
+    },
+    {
+      "id": "HOST-RPC",
+      "area": "rpc",
+      "requirement": "typed RPC register/call: read-only status method",
+      "status": "PASSED",
+      "detail": "typed rpc call returned storageCounter=108",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-PaADxL/probe.jsonl"
+      ],
+      "observedAt": 1789693475621
+    },
+    {
+      "id": "HOST-STORAGE",
+      "area": "storage",
+      "requirement": "plugin storage survives location reload",
+      "status": "PASSED",
+      "detail": "plugin storage counter persisted across a location reload",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-oq5bze/probe.jsonl"
+      ],
+      "observedAt": 1789693477211
+    }
+  ],
+  "artifacts": {
+    "results": "/Users/annenpolka/ghq/github.com/annenpolka/jev-warden-opencode2/checks/host-conformance-2.0.7.json"
+  },
+  "notes": [
+    "All model calls were served by a local OpenAI-compatible mock on 127.0.0.1.",
+    "No Jev/Lab/network call was made by this run.",
+    "Scratch directories were removed."
+  ]
+}
