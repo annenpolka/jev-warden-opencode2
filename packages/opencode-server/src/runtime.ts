@@ -80,6 +80,8 @@ export class WardenRuntime {
   private readonly spool: EventEnvelope[] = []
   private readonly pending = new Map<string, PendingToolCall>()
   private readonly pins = new SessionPins()
+  private readonly revokedDigests = new Set<string>()
+  private readonly guidanceBySession = new Map<string, boolean>()
   private sequence = 0
   private counter = 0
   private unresolvedScopeEvents = 0
@@ -119,20 +121,60 @@ export class WardenRuntime {
   }
 
   /**
-   * Binds the built-in baseline policy to a session at first observation. A
-   * later adopted bundle may replace the baseline only through a new session.
+   * Binds a policy to a session at first observation. The caller supplies the
+   * adopted bundle when one is active; otherwise the built-in baseline is used.
+   * A later active-pointer move does not replace an existing session pin.
    */
-  bindSessionPin(input: { readonly sessionId: string; readonly agentId?: string }): PolicyPin {
-    const scope = {
-      serverId: this.serverId,
-      serverEpoch: this.serverEpoch,
-      locationId: this.locationId,
-      projectId: this.projectId,
-      worktreeId: this.worktreeId,
-      sessionId: input.sessionId,
-      agentId: input.agentId ?? "unobserved",
+  bindSessionPin(
+    input: { readonly sessionId: string; readonly agentId?: string },
+    policy?: { readonly id: string; readonly digest: string },
+    guidanceEnabled = false,
+  ): PolicyPin {
+    const pin = this.pins.pin(
+      {
+        serverId: this.serverId,
+        serverEpoch: this.serverEpoch,
+        locationId: this.locationId,
+        projectId: this.projectId,
+        worktreeId: this.worktreeId,
+        sessionId: input.sessionId,
+        agentId: input.agentId ?? "unobserved",
+      },
+      policy ?? { id: BASELINE_POLICY_ID, digest: BASELINE_POLICY_DIGEST },
+    )
+    if (!this.guidanceBySession.has(input.sessionId)) {
+      this.guidanceBySession.set(input.sessionId, guidanceEnabled)
     }
-    return this.pins.pin(scope, { id: BASELINE_POLICY_ID, digest: BASELINE_POLICY_DIGEST })
+    return pin
+  }
+
+  noteRevokedDigests(digests: readonly string[]): void {
+    for (const digest of digests) this.revokedDigests.add(digest)
+  }
+
+  isRevoked(digest: string): boolean {
+    return this.revokedDigests.has(digest)
+  }
+
+  /** Whether context guidance is delivered for this session, and why not. */
+  guidanceGate(sessionId: string): "deliver" | "suppress" | "revoked" {
+    const pin = this.pinFor({ sessionId })
+    if (pin === undefined) return "suppress"
+    if (this.isRevoked(pin.policyDigest)) return "revoked"
+    return this.guidanceBySession.get(sessionId) === true ? "deliver" : "suppress"
+  }
+
+  pinsView(): readonly Record<string, unknown>[] {
+    return [...this.guidanceBySession.entries()].map(([sessionId, guidance]) => {
+      const pin = this.pinFor({ sessionId })
+      return {
+        sessionId,
+        policyId: pin?.policyId ?? null,
+        policyDigest: pin?.policyDigest ?? null,
+        guidance,
+        revoked: pin === undefined ? false : this.isRevoked(pin.policyDigest),
+      }
+    })
   }
 
   pinFor(input: { readonly sessionId: string; readonly agentId?: string }): PolicyPin | undefined {
@@ -286,7 +328,9 @@ export class WardenRuntime {
       eventTypes: Object.fromEntries(this.eventTypes),
       pinnedSessions: this.pins.size,
       unresolvedScopeEvents: this.unresolvedScopeEvents,
+      revokedDigests: this.revokedDigests.size,
       baselinePolicy: { id: BASELINE_POLICY_ID, digest: BASELINE_POLICY_DIGEST },
+      pins: this.pinsView(),
     }
   }
 

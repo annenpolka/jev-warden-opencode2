@@ -4,8 +4,8 @@
     "cliVersion": "2.0.7",
     "opencodeVersionFromServer": "2.0.7"
   },
-  "startedAt": 1789694305516,
-  "finishedAt": 1789694328213,
+  "startedAt": 1789696544467,
+  "finishedAt": 1789696579761,
   "cases": [
     {
       "id": "OC2-001",
@@ -14,10 +14,10 @@
       "status": "PASSED",
       "detail": "load+cleanup+reload on opencode 2.0.7; plugin state active",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-x9MyGP/probe.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-x9MyGP/opencode.json"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-rGFaYi/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-rGFaYi/opencode.json"
       ],
-      "observedAt": 1789694307109
+      "observedAt": 1789696546223
     },
     {
       "id": "OC2-007",
@@ -26,10 +26,10 @@
       "status": "PASSED",
       "detail": "temporary system guidance reached the model call and was absent from session readback",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-AaXRXV/mock.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-AaXRXV/warden.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-cVd7JX/mock.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-cVd7JX/warden.jsonl"
       ],
-      "observedAt": 1789694309177
+      "observedAt": 1789696548295
     },
     {
       "id": "OC2-004",
@@ -38,10 +38,10 @@
       "status": "PASSED",
       "detail": "hook order honoured config order: warden recorded the rewritten draft (observed_prompt_draft)",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-J1eE66/probe.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-J1eE66/warden.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-RXmUww/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-RXmUww/warden.jsonl"
       ],
-      "observedAt": 1789694311253
+      "observedAt": 1789696550357
     },
     {
       "id": "OC2-017",
@@ -50,9 +50,9 @@
       "status": "PASSED",
       "detail": "on the tested host, execute.before ran before permission.evaluate; before is a request observation, not an authorization",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-B1E7Gx/probe.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-ZJ763l/probe.jsonl"
       ],
-      "observedAt": 1789694313338
+      "observedAt": 1789696552415
     },
     {
       "id": "OC2-009",
@@ -61,10 +61,10 @@
       "status": "PASSED",
       "detail": "warden recording failed without changing the successful tool result; durability degraded was reported",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-aPr91m/probe.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-aPr91m/opencode.json"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-zhJa0J/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-zhJa0J/opencode.json"
       ],
-      "observedAt": 1789694315403
+      "observedAt": 1789696554491
     },
     {
       "id": "OC2-011",
@@ -73,9 +73,9 @@
       "status": "PASSED",
       "detail": "a later hook changed the effective input; the requested and executed commands differed",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-2jDkju/probe.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-sVF6ij/probe.jsonl"
       ],
-      "observedAt": 1789694317465
+      "observedAt": 1789696556537
     },
     {
       "id": "OC2-016",
@@ -84,10 +84,10 @@
       "status": "PASSED",
       "detail": "ask stayed a pending request while Warden abstained; execution required an explicit user reply",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-2A2bBh/probe.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-2A2bBh/warden.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-8xuXI8/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-8xuXI8/warden.jsonl"
       ],
-      "observedAt": 1789694319602
+      "observedAt": 1789696558664
     },
     {
       "id": "OC2-015",
@@ -96,21 +96,21 @@
       "status": "PASSED",
       "detail": "configured deny skipped the permission hook and produced no side effect; after hook absent (a missing after must stay outcome_unknown)",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-lgxtb0/probe.jsonl",
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-lgxtb0/mock.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iXQvRx/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iXQvRx/mock.jsonl"
       ],
-      "observedAt": 1789694321671
+      "observedAt": 1789696560727
     },
     {
       "id": "HOST-RPC",
       "area": "rpc",
       "requirement": "typed RPC register/call: read-only status method",
       "status": "PASSED",
-      "detail": "typed rpc call returned storageCounter=138",
+      "detail": "typed rpc call returned storageCounter=175",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-1zd8Ft/probe.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-2YKZtm/probe.jsonl"
       ],
-      "observedAt": 1789694322936
+      "observedAt": 1789696561991
     },
     {
       "id": "HOST-STORAGE",
@@ -119,9 +119,9 @@
       "status": "PASSED",
       "detail": "plugin storage counter persisted across a location reload",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-sdWTQP/probe.jsonl"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-l2I002/probe.jsonl"
       ],
-      "observedAt": 1789694324493
+      "observedAt": 1789696563620
     },
     {
       "id": "EXTRA-JEV-DISABLED",
@@ -130,21 +130,56 @@
       "status": "PASSED",
       "detail": "live Jev stays off by default; the review RPC is rejected before any transport call",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-LUNroR/opencode.json"
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-jUJCKA/opencode.json"
       ],
-      "observedAt": 1789694325774
+      "observedAt": 1789696564894
     },
     {
       "id": "EXTRA-JEV-LIVE",
       "area": "jev",
       "requirement": "explicit review RPC runs live Jev, records answers, and enforces budget",
       "status": "PASSED",
-      "detail": "live review through the plugin: sufficiency 0.04 -> 0.87, claim 0.02 -> 0.96; credential-shaped state rejected locally; budget enforced at 2",
+      "detail": "live review through the plugin: sufficiency 0.04 -> 0.85, claim 0.02 -> 0.96; credential-shaped state rejected locally; budget enforced at 2",
       "evidenceRefs": [
-        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-NXd6rH/opencode.json",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-76pGVn/opencode.json",
         "checks/jev-live/2026-09-18-specific-sufficiency/"
       ],
-      "observedAt": 1789694328213
+      "observedAt": 1789696567678
+    },
+    {
+      "id": "EXTRA-POLICY-SWITCH",
+      "area": "policy",
+      "requirement": "active bundle pin survives rollback; revocation stops guidance",
+      "status": "PASSED",
+      "detail": "active candidate-specific-definition-guidance-v1 pinned to A (guidance on); rollback pinned B to baseline and kept A; revocation stopped guidance for A",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-YQ1Cce/warden.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-policy-sMdaQl/policy/active.json"
+      ],
+      "observedAt": 1789696571996
+    },
+    {
+      "id": "EXTRA-JEV-FAULTS",
+      "area": "jev",
+      "requirement": "fault injection: timeout, 5xx, 429, invalid answer, budget exhaustion",
+      "status": "PASSED",
+      "detail": "timeout, 500, 429 and an out-of-range answer stayed unavailable/invalid_response without normalisation; the invalid value was kept raw for audit; the budget stopped the fifth call locally",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-txgo04/warden.jsonl"
+      ],
+      "observedAt": 1789696574189
+    },
+    {
+      "id": "EXTRA-OUTBOX-FAILURE",
+      "area": "storage",
+      "requirement": "an unwritable outbox degrades durability without changing tool results",
+      "status": "PASSED",
+      "detail": "writing the outbox to an unwritable path degraded durability while the tool result stayed unchanged",
+      "evidenceRefs": [
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iBSaU5/probe.jsonl",
+        "/var/folders/t2/89bbgzfj41q22bwkdyr_sgth0000gn/T/jw-conformance-iBSaU5/opencode.json"
+      ],
+      "observedAt": 1789696579761
     }
   ],
   "artifacts": {

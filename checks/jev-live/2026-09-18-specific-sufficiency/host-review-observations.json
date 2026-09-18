@@ -1,9 +1,9 @@
 {
   "schemaVersion": "warden.jev-host-observations/0.1",
-  "at": 1789694327856,
+  "at": 1789696567320,
   "host": "opencode 2.0.7",
   "transport": "plugin RPC review.request",
-  "sessionID": "ses_f4de7c855ffeOvDw6qEsPQnIPH",
+  "sessionID": "ses_f4dc59dd4ffef3sshil2r7Q7RV",
   "reviews": [
     {
       "arm": "credential-control",
@@ -44,7 +44,7 @@
         "answers": {
           "expected_calls_value_visible": {
             "type": "noul",
-            "noul": 0.87
+            "noul": 0.85
           },
           "expected_total_is_three": {
             "type": "noul",
@@ -77,6 +77,8 @@
     "spooledEvents": 0,
     "droppedEvents": 0,
     "jevObservations": 2,
-    "jevRejected": 2
+    "jevRejected": 2,
+    "guidanceSuppressedByPolicy": 0,
+    "policyRevokedSessions": 0
   }
 }

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "warden.work-comparison/0.1",
+  "at": 1789696400566,
+  "model": "deepseek/deepseek-flash",
+  "task": "find the constant referenced by the test and report the expected notification count",
+  "expected": "3",
+  "guidance": "The constant EXPECTED_CALLS is defined in config/limits.ts.",
+  "preRegistered": {
+    "primaryMetric": "correctness (ANSWER == expected)",
+    "secondaryMetric": "mean tool calls",
+    "adoptionRule": "candidate correct >= baseline correct AND candidate mean tool calls < baseline mean tool calls, at >= 8 trials per arm",
+    "minTrialsForAdoption": 8
+  },
+  "byArm": {
+    "control": {
+      "trials": 8,
+      "correct": 8,
+      "accuracy": 1,
+      "meanDurationMs": 10053,
+      "meanToolCalls": 5.75
+    },
+    "baseline": {
+      "trials": 8,
+      "correct": 8,
+      "accuracy": 1,
+      "meanDurationMs": 6654,
+      "meanToolCalls": 3.88
+    },
+    "candidate": {
+      "trials": 8,
+      "correct": 8,
+      "accuracy": 1,
+      "meanDurationMs": 8494,
+      "meanToolCalls": 4.63
+    }
+  },
+  "comparison": {
+    "candidateMinusBaselineAccuracy": 0,
+    "nonInferior": true,
+    "toolCallsBetter": false,
+    "improvementObserved": false,
+    "enoughTrials": true
+  },
+  "promotionRecommended": false,
+  "decision": "hold",
+  "reason": "correctness was non-inferior but the secondary metric did not improve"
+}

@@ -15,7 +15,8 @@
  */
 import { spawn } from "node:child_process"
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs"
-import { createServer } from "node:net"
+import { createServer } from "node:http"
+import { createServer as createNetServer } from "node:net"
 import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -60,13 +61,85 @@ function sleep(ms) {
 
 function freePort() {
   return new Promise((resolvePromise, reject) => {
-    const server = createServer()
+    const server = createNetServer()
     server.unref()
     server.on("error", reject)
     server.listen(0, "127.0.0.1", () => {
       const address = server.address()
       const port = typeof address === "object" && address !== null ? address.port : 0
       server.close(() => resolvePromise(port))
+    })
+  })
+}
+
+/** Runs a Lab CLI and returns its parsed stdout. */
+function runLab(label, script, args) {
+  return new Promise((resolvePromise, reject) => {
+    const proc = spawn(process.execPath, [join(repoRoot, "packages/lab/src", script), ...args], {
+      cwd: repoRoot,
+      stdio: ["ignore", "pipe", "pipe"],
+    })
+    let stdout = ""
+    let stderr = ""
+    proc.stdout.on("data", (chunk) => {
+      stdout += chunk.toString()
+    })
+    proc.stderr.on("data", (chunk) => {
+      stderr += chunk.toString()
+    })
+    proc.on("close", (code) => {
+      if (code !== 0) {
+        reject(new Error(`${label} exited ${code}: ${stderr.slice(0, 300)}`))
+        return
+      }
+      try {
+        resolvePromise(JSON.parse(stdout))
+      } catch {
+        reject(new Error(`${label} produced non-JSON output: ${stdout.slice(0, 200)}`))
+      }
+    })
+  })
+}
+
+/** A local Jev endpoint used only for fault injection. */
+function startFaultJev(script) {
+  return new Promise((resolvePromise) => {
+    const requests = []
+    const server = createServer(async (req, res) => {
+      const chunks = []
+      for await (const chunk of req) chunks.push(chunk)
+      let body = {}
+      try {
+        body = JSON.parse(Buffer.concat(chunks).toString("utf8"))
+      } catch {}
+      const index = requests.length
+      requests.push({ at: Date.now(), body })
+      const entry = script[index] ?? { kind: "ok", noul: 0.5 }
+      if (entry.kind === "hang") {
+        // Never respond: the transport deadline must handle it.
+        return
+      }
+      if (entry.kind === "http_error") {
+        res.writeHead(entry.status ?? 429, { "content-type": "application/json" })
+        res.end(JSON.stringify({ error: "scripted fault" }))
+        return
+      }
+      const answers = {}
+      for (const [name] of Object.entries(body.questions ?? {})) {
+        if (entry.kind === "invalid_noul") answers[name] = { type: "noul", noul: 1.4 }
+        else answers[name] = { type: "noul", noul: entry.noul ?? 0.5 }
+      }
+      res.writeHead(200, { "content-type": "application/json" })
+      res.end(JSON.stringify({ model: "jev-fault-mock", answers }))
+    })
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address()
+      const port = typeof address === "object" && address !== null ? address.port : 0
+      resolvePromise({
+        url: `http://127.0.0.1:${port}/v1/systemone`,
+        requests,
+        stop: () => server.close(),
+      })
     })
   })
 }
@@ -852,6 +925,188 @@ async function main() {
       },
     )
     return result
+  })
+
+  // ------------------------------------------------------------- policy switch
+  const candidateBundle = JSON.parse(readFileSync(join(fixtureDir, "candidate-bundle.json"), "utf8"))
+  await runCase("EXTRA-POLICY-SWITCH", "policy", "active bundle pin survives rollback; revocation stops guidance", async () => {
+    const policyDir = mkdtempSync(join(tmpdir(), "jw-policy-"))
+    const marker = `JW-POLICY-GUIDANCE-${Date.now()}`
+    try {
+      const labDb = join(policyDir, "lab.db")
+      const policyFile = join(policyDir, "policy", "active.json")
+      const candidatePath = join(policyDir, "candidate.json")
+      writeFileSync(candidatePath, JSON.stringify(candidateBundle, null, 2))
+      const stored = await runLab("candidate", "candidate.mjs", ["--db", labDb, "--bundle", candidatePath])
+      const promoted = await runLab("promote", "policy.mjs", [
+        "--db", labDb, "promote",
+        "--bundle", candidateBundle.id,
+        "--digest", stored.digest,
+        "--evaluation", "canary-mechanics-validation",
+        "--export", policyFile,
+      ])
+      assert(promoted.pointer?.status === "active", "promotion did not move the active pointer")
+
+      const result = await withHost(
+        { probe: {}, warden: { advisoryNote: marker, policyPath: policyFile } },
+        async (env) => {
+          const idA = await env.host.createSession("policy-a")
+          await env.host.prompt(idA, "Policy check A")
+          await env.host.waitIdle(idA)
+          await sleep(500)
+          const eventsA = env.wardenEvents()
+          const boundA = eventsA.filter((entry) => entry.event === "policy.bound" && entry.sessionID === idA).pop()
+          assert(boundA?.policyId === candidateBundle.id, `session A pinned ${boundA?.policyId}`)
+          assert(boundA?.guidanceEnabled === true, "candidate guidance was not enabled")
+          assert(eventsA.some((entry) => entry.event === "guidance.delivered" && entry.sessionID === idA), "guidance was not delivered")
+          const requestsWithMarkerBefore = env.mock.events().filter((entry) => JSON.stringify(entry.body).includes(marker)).length
+          assert(requestsWithMarkerBefore >= 1, "guidance marker never reached the model request")
+
+          const snapshotA = await env.host.rpc("jev-warden", "snapshot.get", {})
+          const pinA = (snapshotA?.debug?.pins ?? []).find((entry) => entry.sessionId === idA)
+          assert(pinA?.policyId === candidateBundle.id && pinA.guidance === true && pinA.revoked === false,
+            `unexpected pin view for A: ${JSON.stringify(pinA)}`)
+
+          await runLab("rollback", "policy.mjs", [
+            "--db", labDb, "rollback", "--evaluation", "eval-rollback-1", "--export", policyFile,
+          ])
+          await sleep(300)
+
+          const idB = await env.host.createSession("policy-b")
+          await env.host.prompt(idB, "Policy check B")
+          await env.host.waitIdle(idB)
+          await sleep(500)
+          const eventsB = env.wardenEvents()
+          const boundB = eventsB.filter((entry) => entry.event === "policy.bound" && entry.sessionID === idB).pop()
+          assert(boundB?.policyId === "baseline-observe-only", `session B pinned ${boundB?.policyId}`)
+          assert(
+            eventsB.some((entry) => entry.event === "guidance.suppressed" && entry.sessionID === idB && entry.reason === "suppress"),
+            "baseline pin did not suppress guidance",
+          )
+          const latestRequest = env.mock.events().at(-1)
+          assert(!JSON.stringify(latestRequest?.body ?? {}).includes(marker), "suppressed guidance still reached the model")
+          const snapshotB = await env.host.rpc("jev-warden", "snapshot.get", {})
+          const pinAAfterRollback = (snapshotB?.debug?.pins ?? []).find((entry) => entry.sessionId === idA)
+          assert(pinAAfterRollback?.policyId === candidateBundle.id, "rollback replaced an existing session pin")
+
+          await runLab("revoke", "policy.mjs", [
+            "--db", labDb, "revoke", "--digest", stored.digest, "--reason", "conformance", "--export", policyFile,
+          ])
+          await sleep(300)
+          await env.host.prompt(idA, "Policy check A2")
+          await env.host.waitIdle(idA)
+          await sleep(500)
+          const eventsA2 = env.wardenEvents()
+          assert(
+            eventsA2.some((entry) => entry.event === "guidance.suppressed" && entry.sessionID === idA && entry.reason === "revoked"),
+            "revocation did not stop guidance for the pinned session",
+          )
+          const snapshot2 = await env.host.rpc("jev-warden", "snapshot.get", {})
+          const pinA2 = (snapshot2?.debug?.pins ?? []).find((entry) => entry.sessionId === idA)
+          assert(pinA2?.revoked === true, "revoked pin was not visible in the snapshot")
+          const status = await env.host.rpc("jev-warden", "status", {})
+          assert(status?.status?.counters?.policyRevokedSessions === 1, "policyRevokedSessions counter mismatch")
+
+          return {
+            status: "PASSED",
+            detail:
+              `active ${candidateBundle.id} pinned to A (guidance on); rollback pinned B to baseline and kept A; ` +
+              `revocation stopped guidance for A`,
+            evidenceRefs: [env.artifacts.wardenLog, policyFile],
+          }
+        },
+      )
+      return result
+    } finally {
+      if (keepScratch !== true) rmSync(policyDir, { recursive: true, force: true })
+    }
+  })
+
+  // --------------------------------------------------------------- Jev faults
+  await runCase("EXTRA-JEV-FAULTS", "jev", "fault injection: timeout, 5xx, 429, invalid answer, budget exhaustion", async () => {
+    const faults = await startFaultJev([
+      { kind: "hang" },
+      { kind: "http_error", status: 500 },
+      { kind: "http_error", status: 429 },
+      { kind: "invalid_noul" },
+    ])
+    try {
+      const result = await withHost(
+        { probe: {}, warden: { jev: { enabled: true, maxRequests: 4, timeoutMs: 800, endpoint: faults.url } } },
+        async (env) => {
+          const sessionID = await env.host.createSession("jev-faults")
+          const state = { test_code: fixtureTestCode, definitions: fixtureDefinitionsMissing }
+          const call = () => env.host.rpc("jev-warden", "review.request", { sessionID, probeID, state })
+
+          const timeout = await call()
+          assert(timeout?.status === "unavailable", `timeout: expected unavailable, got ${timeout?.status}`)
+          assert(/transport_error/.test(timeout?.error ?? ""), `timeout error was ${timeout?.error}`)
+          const serverError = await call()
+          assert(serverError?.status === "unavailable" && /^http_500/.test(serverError?.error ?? ""), `500 handling: ${JSON.stringify(serverError)}`)
+          const rateLimited = await call()
+          assert(rateLimited?.status === "unavailable" && /^http_429/.test(rateLimited?.error ?? ""), `429 handling: ${JSON.stringify(rateLimited)}`)
+          const invalid = await call()
+          assert(invalid?.status === "invalid_response", `invalid answer: expected invalid_response, got ${invalid?.status}`)
+          assert((invalid?.error ?? "").startsWith("answer_invalid"), `invalid error was ${invalid?.error}`)
+          const overBudget = await call()
+          assert(overBudget?.status === "budget_exhausted", `expected budget_exhausted, got ${overBudget?.status}`)
+          assert(faults.requests.length === 4, `fault endpoint saw ${faults.requests.length} requests`)
+
+          const listed = await env.host.rpc("jev-warden", "review.list", { sessionID })
+          const invalidItem = (listed?.items ?? []).find((entry) => entry.status === "invalid_response")
+          assert(
+            typeof invalidItem?.rawSample === "string" && invalidItem.rawSample.includes("1.4"),
+            `raw invalid answer was not kept for audit: ${JSON.stringify(invalidItem?.rawSample)}`,
+          )
+
+          const status = await env.host.rpc("jev-warden", "status", {})
+          assert(
+            status?.status?.counters?.jevRejected === 5,
+            `jevRejected counter mismatch: ${status?.status?.counters?.jevRejected} (timeout, 500, 429, invalid, budget stop)`,
+          )
+          assert(status?.status?.counters?.jevObservations === 0, "a faulted call was recorded as an observation")
+          return {
+            status: "PASSED",
+            detail:
+              "timeout, 500, 429 and an out-of-range answer stayed unavailable/invalid_response without normalisation; " +
+              "the invalid value was kept raw for audit; the budget stopped the fifth call locally",
+            evidenceRefs: [env.artifacts.wardenLog],
+          }
+        },
+      )
+      return result
+    } finally {
+      faults.stop()
+    }
+  })
+
+  // ------------------------------------------------------------ outbox failure
+  await runCase("EXTRA-OUTBOX-FAILURE", "storage", "an unwritable outbox degrades durability without changing tool results", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "jw-outboxfail-"))
+    try {
+      const result = await withHost(
+        { probe: {}, warden: { outboxPath: dir }, script: SHELL_TOOL_SCRIPT(`echo ${toolOutput}`, "done") },
+        async (env) => {
+          const sessionID = await env.host.createSession("outbox-failure")
+          await env.host.prompt(sessionID, "Run the shell tool.")
+          await env.host.waitIdle(sessionID)
+          await sleep(4_000)
+          const after = env.probeEvents().find((entry) => entry.event === "tool.execute.after")
+          assert(after?.status === "completed", `tool did not complete: ${after?.status}`)
+          assert(JSON.stringify(after.result).includes(toolOutput), "tool output was not preserved")
+          const status = await env.host.rpc("jev-warden", "status", {})
+          assert(status?.status?.flags?.durabilityDegraded === true, "durability degradation was not reported")
+          return {
+            status: "PASSED",
+            detail: "writing the outbox to an unwritable path degraded durability while the tool result stayed unchanged",
+            evidenceRefs: [env.artifacts.probeLog, env.artifacts.config],
+          }
+        },
+      )
+      return result
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 
   const finishedAt = Date.now()

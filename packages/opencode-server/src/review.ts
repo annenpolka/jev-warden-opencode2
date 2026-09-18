@@ -103,6 +103,7 @@ export async function requestReview(deps: ReviewDeps, input: ReviewInput): Promi
     ...(result.model === undefined ? {} : { model: result.model }),
     ...(result.error === undefined ? {} : { error: result.error }),
     ...(result.usage === undefined ? {} : { usage: result.usage }),
+    ...(result.rawSample === undefined ? {} : { rawSample: result.rawSample }),
     stateRefs: input.stateRefs ?? [],
   }
   ledger.add(observation)

@@ -9,7 +9,7 @@
 import { Plugin } from "@opencode/plugin/effect"
 import { Effect, Schedule, Stream } from "effect"
 import { appendFileSync, mkdirSync } from "node:fs"
-import { dirname } from "node:path"
+import { dirname, isAbsolute, join } from "node:path"
 import { WardenRpc } from "@jev-warden/contracts"
 import { assertStatusSafe, correlationDigest } from "@jev-warden/core"
 import { createLiveJev, macOsKeychainReader } from "./jev-live.ts"
@@ -17,6 +17,7 @@ import { parseOptions } from "./options.ts"
 import { registerHooks, probe } from "./hooks.ts"
 import { requestReview, ReviewLedger, type ReviewInput } from "./review.ts"
 import { resolveOutboxPath } from "./outbox.ts"
+import { createPolicyLoader, BASELINE_LOADED } from "./policy-source.ts"
 import { PLUGIN_ID, PLUGIN_VERSION, SPOOL_LIMIT, STORAGE_KEY, WardenRuntime } from "./runtime.ts"
 
 function toJsonValue(value: unknown): unknown {
@@ -81,6 +82,18 @@ const plugin = Plugin.define({
         probe(runtime, { event: "outbox.configured", path: outboxPath })
       }
 
+      const policyLoader =
+        parsed.options.policyPath === null
+          ? undefined
+          : createPolicyLoader(
+              isAbsolute(parsed.options.policyPath)
+                ? parsed.options.policyPath
+                : join(locationDirectory, parsed.options.policyPath),
+            )
+      if (policyLoader !== undefined) {
+        probe(runtime, { event: "policy.configured", path: parsed.options.policyPath, status: policyLoader.describe() })
+      }
+
       const flushSpool = (): Effect.Effect<void> =>
         Effect.gen(function* () {          const snapshot = runtime.spoolSnapshot.slice(-SPOOL_LIMIT)
           if (snapshot.length === 0) return
@@ -123,7 +136,18 @@ const plugin = Plugin.define({
         probe(runtime, { event: "spool.restored", hasPrevious: true })
       }
 
-      yield* registerHooks(ctx, { runtime, flushSpool })
+      yield* registerHooks(ctx, {
+        runtime,
+        flushSpool,
+        ...(parsed.options.policyPath === null
+          ? {}
+          : {
+              loadPolicy: () => {
+                const loader = policyLoader
+                return loader === undefined ? { ...BASELINE_LOADED, error: "policy_loader_missing" } : loader.load()
+              },
+            }),
+      })
 
       // Live Jev is opt-in and only reachable through the explicit review RPC.
       const reviewLedger = new ReviewLedger()
@@ -151,7 +175,11 @@ const plugin = Plugin.define({
           Effect.sync(() => ({
             cutSequence: runtime.currentSequence,
             itemCount: runtime.spoolSnapshot.length,
-            debug: toJsonValue({ ...runtime.debugSummary(), reviewItems: reviewLedger.size }) as Record<string, unknown>,
+            debug: toJsonValue({
+              ...runtime.debugSummary(),
+              reviewItems: reviewLedger.size,
+              policySource: policyLoader?.describe() ?? { source: "baseline" },
+            }) as Record<string, unknown>,
           })),
         "review.request": (input) =>
           Effect.promise(async () => {

@@ -212,8 +212,11 @@
       "scenario": "429/5xx/timeout",
       "requiredInvariant": "期限・予算を保ち未評価をpassにしない",
       "phase": "1",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#EXTRA-JEV-FAULTS"
+      ],
+      "statusNote": "timeout/500/429/budgetをローカルfault endpointで実機注入。未評価をpassにせず、budgetは送信前に停止。"
     },
     {
       "id": "OC2-022",
@@ -221,8 +224,11 @@
       "scenario": "無効分布/未知choice",
       "requiredInvariant": "raw異常を記録し正常化しない",
       "phase": "1",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#EXTRA-JEV-FAULTS"
+      ],
+      "statusNote": "範囲外noulはinvalid_responseのまま。rawSampleを監査用に保存し正常化しない。choiceの不正はoffline transport testで確認。"
     },
     {
       "id": "OC2-023",
@@ -231,7 +237,8 @@
       "requiredInvariant": "staleとして適用しない",
       "phase": "1",
       "status": "NOT_RUN",
-      "evidenceRefs": []
+      "evidenceRefs": [],
+      "statusNote": "reviewは同期実行で結果にdigestを付与し、遅延適用経路が存在しない。stale適用の実機注入は未実施。"
     },
     {
       "id": "OC2-024",
@@ -293,8 +300,11 @@
       "scenario": "disk full/Lab停止",
       "requiredInvariant": "durability_degradedを表示する",
       "phase": "1",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#EXTRA-OUTBOX-FAILURE"
+      ],
+      "statusNote": "書込不能なoutboxでdurabilityDegradedを表示。tool結果は不変。disk full/Lab停止の代理事象。"
     },
     {
       "id": "OC2-031",
@@ -302,8 +312,11 @@
       "scenario": "v12既存sessionとv13新session",
       "requiredInvariant": "それぞれpinを維持する",
       "phase": "1",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/host-conformance-2.0.7.json#EXTRA-POLICY-SWITCH"
+      ],
+      "statusNote": "active pointerで新sessionはcandidate、rollback後はbaselineをpin。既存sessionはpin維持。v12/v13共存の実装類似。"
     },
     {
       "id": "OC2-032",
@@ -321,7 +334,8 @@
       "requiredInvariant": "影響sessionのadvisory停止と成果物再確認",
       "phase": "4",
       "status": "NOT_RUN",
-      "evidenceRefs": []
+      "evidenceRefs": [],
+      "statusNote": "緊急失効で既存sessionの助言停止とrevoked表示は確認（EXTRA-POLICY-SWITCHの一部）。影響成果物の再確認は未実装。"
     },
     {
       "id": "OC2-034",
@@ -474,12 +488,14 @@
     "jev": "live jev-latest (returned jev-1.13.0) through the explicit review RPC; synthetic fixtures only",
     "budget": "Jev requests capped per plugin activation; the live conformance case enforces maxRequests=2",
     "workComparison": "deepseek/deepseek-flash, 3 arms x 3 trials (checks/work-comparison/2026-09-18)",
-    "lab": "SQLite ingest of the live outbox; 11 events, contiguous ack 11, re-ingest duplicate-safe"
+    "lab": "SQLite ingest of the live outbox; 11 events, contiguous ack 11, re-ingest duplicate-safe",
+    "jevFaults": "local fault endpoint: timeout/500/429/invalid answer/budget (checks/host-conformance-2.0.7.json#EXTRA-JEV-FAULTS)",
+    "policyLifecycle": "Lab promote/rollback/revoke + per-session pin (checks/host-conformance-2.0.7.json#EXTRA-POLICY-SWITCH)"
   },
   "notes": [
     "PASSED entries cite checks/host-conformance-2.0.7.json and were executed against the installed host.",
     "NOT_RUN entries remain not executed; do not read the changed runtimeTestsExecuted flag as full coverage.",
     "statusNote records the exact scope of each executed case, including what was not exercised.",
-    "OC2-045 was executed at a smaller volume than the pre-registered adoption threshold; the decision remains hold."
+    "OC2-045 was executed at a smaller volume than the pre-registered adoption threshold; the larger 8-trial run did not show a tool-call improvement, so the candidate remains held."
   ]
 }

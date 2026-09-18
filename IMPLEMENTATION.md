@@ -55,6 +55,10 @@ npm run conformance         # real host, local mock model (writes checks/host-co
 npm run conformance:live    # same plus live Jev review cases (uses the OS credential store)
 npm run lab:ingest          # ingest .warden/outbox.jsonl into .warden/lab.db
 npm run lab:report          # print Lab totals, streams and recent events
+node packages/lab/src/candidate.mjs --db .warden/lab.db --bundle candidate.json
+node packages/lab/src/policy.mjs --db .warden/lab.db promote --bundle <id> --digest <sha256> --evaluation <ref> --export .warden/policy/active.json
+node packages/lab/src/policy.mjs --db .warden/lab.db rollback --evaluation <ref> --export .warden/policy/active.json
+node packages/lab/src/policy.mjs --db .warden/lab.db revoke --digest <sha256> --reason <text> --export .warden/policy/active.json
 npm run work:compare        # 3-arm work comparison with deepseek-flash (real provider calls)
 node fixtures/host-contracts/collect-host-baseline.mjs --out checks/host-baseline-2.0.7.json --conformance checks/host-conformance-2.0.7.json
 node packages/doctor/src/main.ts --out checks/doctor.2.0.7.json --conformance checks/host-conformance-2.0.7.json
@@ -148,34 +152,48 @@ Against `jev-warden-opencode2-design-v0.1.md`, using allowlisted excerpts only (
 The low answers matched code inspection, so two behaviors were changed rather than papered over:
 
 - `EventEnvelope` gained `unresolvedFields`; session events without their own verified location now record `["projectId","worktreeId"]` as unresolved instead of presenting location-derived values as session scope.
-- The runtime binds the built-in `baseline-observe-only` policy to a session at first observation through Core `SessionPins`; envelopes for that session carry the pinned id/digest, the pin is stable across agent switches, and `snapshot.get` reports `pinnedSessions`, `unresolvedScopeEvents` and the baseline policy. Adopted-bundle application is still not implemented.
+- The runtime binds a policy to a session at first observation through Core `SessionPins`: the active bundle when one is exported, otherwise the built-in `baseline-observe-only`. Envelopes for that session carry the pinned id/digest, the pin is stable across agent switches, and `snapshot.get` reports `pinnedSessions`, `unresolvedScopeEvents`, the active policy source and the per-session pin view.
 
 Probabilities are not acceptance: the fixes are confirmed by the Core and server tests (15 + 23) and by code review; the second crosscheck only guided where to look.
 
-## Work comparison (executed, small n)
+## Policy lifecycle (executed)
 
-`fixtures/work-comparison/run.mjs` solves a fixed task with a real model in three arms and scores correctness with a deterministic sentinel, separately from tool-call count and duration. Thresholds are pre-registered in the script.
+The Lab owns the active pointer; the server plugin applies it per session.
 
-Run of 2026-09-18 with `deepseek/deepseek-flash`, 3 trials per arm:
+- `packages/lab/src/candidate.mjs` validates a bundle as data and stores it with a recomputed digest.
+- `packages/lab/src/policy.mjs promote|rollback|revoke` moves the pointer or revocation list in a SQLite transaction and exports `active.json` atomically (temp file + rename).
+- The plugin reads `options.policyPath` at session start: the bundle is re-validated, its digest recomputed, and retired/revoked/mismatched files fall back to the built-in baseline. Existing sessions keep their pin; a pointer move affects new sessions.
+- Context guidance follows the pinned bundle: a baseline or non-advisory pin suppresses the operator note, a revoked digest stops guidance for the pinned session, and both paths increment separate counters (`guidanceSuppressedByPolicy`, `policyRevokedSessions`).
+
+Executed in `EXTRA-POLICY-SWITCH` (opencode 2.0.7): session A pinned `candidate-specific-definition-guidance-v1` and received guidance; rollback pinned session B to baseline and suppressed guidance while A kept its pin; revocation stopped A's guidance and the snapshot reported `revoked: true`. Promotion used `canary-mechanics-validation` as its evaluation reference: the mechanism was validated, but the candidate itself was **not** adopted — see the work comparison below.
+
+## Jev faults and answer validation (executed)
+
+`EXTRA-JEV-FAULTS` injects a local endpoint: a hanging request (deadline), a 500, a 429, an out-of-range `noul` (1.4), then budget exhaustion. Results: `unavailable` for timeout/500/429 with the status preserved, `invalid_response` for the bad answer with the raw value kept unnormalised in the ledger (`rawSample`), and `budget_exhausted` before any fifth request left the process. Faulted calls were counted as `jevRejected`, never as observations.
+
+## Work comparison (executed)
+
+`fixtures/work-comparison/run.mjs` solves a fixed task with a real model in three arms and scores correctness with a deterministic sentinel, separately from tool-call count and duration. Thresholds are pre-registered in the script: correctness non-inferior **and** mean tool calls lower than baseline, at 8 trials per arm.
+
+Run of 2026-09-18 with `deepseek/deepseek-flash`, 8 trials per arm (24 real model calls):
 
 | arm | correct | mean tool calls | mean duration |
 |---|---|---|---|
-| control (no Warden) | 3/3 | 4.0 | 6.6s |
-| baseline (Warden observe-only) | 3/3 | 5.67 | 9.3s |
-| candidate (Warden + fixed advisory) | 3/3 | 4.67 | 7.8s |
+| control (no Warden) | 8/8 | 5.75 | 10.1s |
+| baseline (Warden observe-only) | 8/8 | 3.88 | 6.7s |
+| candidate (Warden + fixed advisory) | 8/8 | 4.63 | 8.5s |
 
-Decision: **hold** — correctness did not separate, the tool-call difference is within noise at n=3, and the pre-registered minimum is 8 trials per arm. Artifacts: `checks/work-comparison/2026-09-18/`.
+Decision: **hold** — correctness was non-inferior, but the advisory arm used more tool calls than the observe-only baseline, so the pre-registered adoption rule failed. The earlier 3-trial run is kept for comparison. Artifacts: `checks/work-comparison/2026-09-18/` and `checks/work-comparison/2026-09-18-large/`. A negative result is a valid learning outcome: the candidate is not promoted and stays available for a different task family or a redesigned input.
 
 ## Not implemented / not executed
 
-- Jev fault injection (429/timeout/invalid distribution), stale-snapshot application, cold/warm and language comparisons: `NOT_RUN`.
-- Adopted PolicyBundle application (fetch/validate/replace the baseline pin), bundle promotion and rollback: `NOT_RUN`; only the built-in baseline pin is bound.
 - Episode/candidate storage in the Lab (episodes are still files) and outbox ack-back to the plugin: `NOT_RUN`.
+- Automated promotion (the decision and pointer move are operator-driven CLI steps today), artifact re-confirmation after revocation, and retirement flows: `NOT_RUN`.
+- Stale-answer application: no deferred application path exists (reviews are synchronous and stamped), so staleness was not injected.
 - TUI plugin loading and slot rendering: `NOT_RUN` (no interactive TUI session was exercised).
-- Work comparison at the pre-registered volume, adoption, rollback, retirement: `NOT_RUN`; the candidate from the episode is held.
 - Worktree/executor isolation and mutation testing: `NOT_RUN`.
 - Event-stream reconnect/dedup semantics, epoch change, multi-client controller lease: `NOT_RUN`.
-- Real provider models beyond the small `deepseek-flash` work comparison: not used.
+- Cold/warm, batch-width and language comparisons for Jev: `NOT_RUN`.
 
 ## Non-goals held in this change unit
 

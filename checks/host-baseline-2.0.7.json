@@ -1,6 +1,6 @@
 {
   "schemaVersion": "warden.host-baseline/0.1",
-  "capturedAt": 1789694328298,
+  "capturedAt": 1789696579863,
   "installedHost": {
     "cliVersionRaw": "opencode v2.0.7",
     "binaryPath": "/opt/homebrew/bin/opencode",
@@ -37,7 +37,7 @@
     "file": "checks/host-conformance-2.0.7.json",
     "cliVersion": "2.0.7",
     "serverVersion": "2.0.7",
-    "caseCount": 12,
+    "caseCount": 15,
     "failed": 0
   },
   "observedContracts": [

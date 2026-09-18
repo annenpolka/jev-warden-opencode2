@@ -19,6 +19,8 @@ export interface WardenCounters {
   readonly droppedEvents: number
   readonly jevObservations: number
   readonly jevRejected: number
+  readonly guidanceSuppressedByPolicy: number
+  readonly policyRevokedSessions: number
 }
 
 export interface WardenFlags {
@@ -57,6 +59,8 @@ export function emptyCounters(): WardenCounters {
     droppedEvents: 0,
     jevObservations: 0,
     jevRejected: 0,
+    guidanceSuppressedByPolicy: 0,
+    policyRevokedSessions: 0,
   }
 }
 

@@ -58,6 +58,8 @@ export interface JevCallResult {
   readonly answers?: Readonly<Record<string, JevAnswer>>
   readonly usage?: { readonly inputTokens?: number; readonly outputTokens?: number }
   readonly error?: string
+  /** Bounded raw sample of an invalid answer, kept unnormalised for audit. */
+  readonly rawSample?: string
   readonly requestDigest: string
   readonly stateDigest: string
   readonly questionsDigest: string
@@ -260,11 +262,12 @@ export function parseResponse(
   for (const [name, question] of Object.entries(questions)) {
     const raw = (answersRaw as Record<string, unknown>)[name]
     if (raw === undefined) {
-      return invalid(`answer_missing:${name}`, requestDigest, stateDigest, questionsDigest, startedAt, finishedAt, model)
+      return invalid(`answer_missing:${name}`, requestDigest, stateDigest, questionsDigest, startedAt, finishedAt, model, "missing")
     }
     const parsed = parseAnswer(raw, question)
     if (parsed === null) {
-      return invalid(`answer_invalid:${name}`, requestDigest, stateDigest, questionsDigest, startedAt, finishedAt, model)
+      const sample = boundedSample(raw)
+      return invalid(`answer_invalid:${name}`, requestDigest, stateDigest, questionsDigest, startedAt, finishedAt, model, sample)
     }
     answers[name] = parsed
   }
@@ -327,16 +330,28 @@ function invalid(
   startedAt: number,
   finishedAt: number,
   model?: string,
+  rawSample?: string,
 ): JevCallResult {
   return {
     status: "invalid_response",
     ...(model === undefined ? {} : { model }),
     error,
+    ...(rawSample === undefined ? {} : { rawSample }),
     requestDigest,
     stateDigest,
     questionsDigest,
     startedAt,
     finishedAt,
+  }
+}
+
+/** Bounded, unnormalised copy of an invalid answer for audit. */
+export function boundedSample(value: unknown): string {
+  try {
+    const text = JSON.stringify(value)
+    return text.length > 500 ? `${text.slice(0, 500)}...` : text
+  } catch {
+    return "[unserialisable]"
   }
 }
 

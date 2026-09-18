@@ -6,7 +6,8 @@
  * contiguous sequence from 1 within one (server, epoch) stream.
  */
 import { DatabaseSync } from "node:sqlite"
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync, readFileSync, mkdirSync, renameSync, writeFileSync } from "node:fs"
+import { dirname } from "node:path"
 
 export function openLab(path) {
   const db = new DatabaseSync(path)
@@ -32,6 +33,42 @@ export function openLab(path) {
       updated_at INTEGER NOT NULL,
       PRIMARY KEY (server_id, server_epoch)
     );
+    CREATE TABLE IF NOT EXISTS episodes (
+      id TEXT PRIMARY KEY,
+      at INTEGER NOT NULL,
+      decision_inputs TEXT NOT NULL,
+      outcome TEXT NOT NULL,
+      resolution TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS candidates (
+      id TEXT PRIMARY KEY,
+      digest TEXT NOT NULL,
+      bundle TEXT NOT NULL,
+      created_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS policy_state (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      bundle_id TEXT,
+      digest TEXT,
+      status TEXT NOT NULL,
+      evaluation_ref TEXT,
+      updated_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS policy_history (
+      entry_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      bundle_id TEXT NOT NULL,
+      digest TEXT NOT NULL,
+      action TEXT NOT NULL,
+      evaluation_ref TEXT,
+      at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS revoked_policies (
+      digest TEXT PRIMARY KEY,
+      reason TEXT NOT NULL,
+      at INTEGER NOT NULL
+    );
+    INSERT OR IGNORE INTO policy_state (id, bundle_id, digest, status, evaluation_ref, updated_at)
+      VALUES (1, NULL, NULL, 'baseline', NULL, 0);
   `)
   return db
 }
@@ -125,3 +162,137 @@ export function summary(db) {
     .all()
   return { events: totals.events, types, streams, recent }
 }
+
+// ---------------------------------------------------------------- episodes
+
+export function saveEpisode(db, episode, now = Date.now()) {
+  const result = db
+    .prepare(`INSERT OR IGNORE INTO episodes (id, at, decision_inputs, outcome, resolution) VALUES (?, ?, ?, ?, ?)`)
+    .run(
+      episode.id,
+      now,
+      JSON.stringify(episode.decisionInputs ?? null),
+      JSON.stringify(episode.outcome ?? null),
+      JSON.stringify(episode.resolution ?? null),
+    )
+  return result.changes === 1
+}
+
+export function saveCandidate(db, candidate, now = Date.now()) {
+  const result = db
+    .prepare(`INSERT OR REPLACE INTO candidates (id, digest, bundle, created_at) VALUES (?, ?, ?, ?)`)
+    .run(candidate.id, candidate.digest, JSON.stringify(candidate.bundle), now)
+  return result.changes >= 1
+}
+
+// ---------------------------------------------------------------- policy pointer
+
+export function activePolicy(db) {
+  const state = db.prepare(`SELECT bundle_id, digest, status, evaluation_ref, updated_at FROM policy_state WHERE id = 1`).get()
+  const revoked = db.prepare(`SELECT digest, reason, at FROM revoked_policies ORDER BY at`).all()
+  return {
+    bundleId: state.bundle_id,
+    digest: state.digest,
+    status: state.status,
+    evaluationRef: state.evaluation_ref,
+    updatedAt: state.updated_at,
+    revoked: revoked.map((entry) => ({ digest: entry.digest, reason: entry.reason, at: entry.at })),
+  }
+}
+
+export function policyHistory(db, limit = 32) {
+  return db
+    .prepare(`SELECT entry_id, bundle_id, digest, action, evaluation_ref, at FROM policy_history ORDER BY entry_id DESC LIMIT ?`)
+    .all(limit)
+}
+
+function appendHistory(db, { bundleId, digest, action, evaluationRef, now }) {
+  db.prepare(`INSERT INTO policy_history (bundle_id, digest, action, evaluation_ref, at) VALUES (?, ?, ?, ?, ?)`).run(
+    bundleId,
+    digest,
+    action,
+    evaluationRef ?? null,
+    now,
+  )
+}
+
+/** Moves the active pointer and appends history in one transaction. */
+export function promotePolicy(db, { bundleId, digest, evaluationRef }, now = Date.now()) {
+  const candidate = db.prepare(`SELECT id, digest FROM candidates WHERE id = ?`).get(bundleId)
+  if (candidate === undefined) throw new Error(`unknown candidate: ${bundleId}`)
+  if (candidate.digest !== digest) throw new Error(`candidate digest mismatch for ${bundleId}`)
+  db.exec("BEGIN IMMEDIATE")
+  try {
+    db.prepare(`UPDATE policy_state SET bundle_id = ?, digest = ?, status = 'active', evaluation_ref = ?, updated_at = ? WHERE id = 1`).run(
+      bundleId,
+      digest,
+      evaluationRef ?? null,
+      now,
+    )
+    appendHistory(db, { bundleId, digest, action: "promote", evaluationRef, now })
+    db.exec("COMMIT")
+  } catch (error) {
+    db.exec("ROLLBACK")
+    throw error
+  }
+  return activePolicy(db)
+}
+
+export function rollbackPolicy(db, { evaluationRef } = {}, now = Date.now()) {
+  const current = activePolicy(db)
+  db.exec("BEGIN IMMEDIATE")
+  try {
+    db.prepare(`UPDATE policy_state SET bundle_id = NULL, digest = NULL, status = 'baseline', evaluation_ref = ?, updated_at = ? WHERE id = 1`).run(
+      evaluationRef ?? null,
+      now,
+    )
+    appendHistory(db, {
+      bundleId: current.bundleId ?? "baseline",
+      digest: current.digest ?? "",
+      action: "rollback",
+      evaluationRef,
+      now,
+    })
+    db.exec("COMMIT")
+  } catch (error) {
+    db.exec("ROLLBACK")
+    throw error
+  }
+  return activePolicy(db)
+}
+
+export function revokePolicy(db, { digest, reason }, now = Date.now()) {
+  db.prepare(`INSERT OR REPLACE INTO revoked_policies (digest, reason, at) VALUES (?, ?, ?)`).run(digest, reason, now)
+  appendHistory(db, { bundleId: "revoked", digest, action: "revoke", evaluationRef: reason, now })
+  return activePolicy(db)
+}
+
+/**
+ * Exports the active pointer and the active bundle as one JSON file that the
+ * server plugin reads. Written atomically so a reader never sees a partial
+ * pointer move.
+ */
+export function writeActivePolicyFile(db, path, now = Date.now()) {
+  const state = activePolicy(db)
+  let bundle = null
+  if (state.bundleId !== null) {
+    const row = db.prepare(`SELECT bundle FROM candidates WHERE id = ?`).get(state.bundleId)
+    if (row !== undefined) bundle = JSON.parse(row.bundle)
+  }
+  const payload = {
+    schemaVersion: "warden.active-policy/0.1",
+    bundleId: state.bundleId,
+    digest: state.digest,
+    status: state.status,
+    evaluationRef: state.evaluationRef,
+    updatedAt: now,
+    revokedDigests: state.revoked.map((entry) => entry.digest),
+    ...(bundle === null ? {} : { bundle }),
+  }
+  mkdirSync(dirname(path), { recursive: true })
+  const tmp = `${path}.tmp-${process.pid}`
+  writeFileSync(tmp, JSON.stringify(payload, null, 2) + "\n")
+  renameSync(tmp, path)
+  return payload
+}
+

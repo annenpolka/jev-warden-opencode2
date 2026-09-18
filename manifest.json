@@ -8,8 +8,8 @@
     },
     {
       "path": "appendix/acceptance-matrix.json",
-      "bytes": 15688,
-      "sha256": "9e43daf38d89cec32e450b4c4d0da190570b64fa9300fb4fe3c6f8edea08d86f"
+      "bytes": 17242,
+      "sha256": "a791afc51c2e80d19199c54b0b228482c74365e8886507198e0ff90b54dd9e94"
     },
     {
       "path": "appendix/core-contracts.test.mjs",

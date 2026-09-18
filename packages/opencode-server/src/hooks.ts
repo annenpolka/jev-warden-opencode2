@@ -25,6 +25,8 @@ import type { WardenRuntime } from "./runtime.ts"
 export interface HookDeps {
   readonly runtime: WardenRuntime
   readonly flushSpool: () => Effect.Effect<void>
+  /** Loads the active policy file; absent when no policy path is configured. */
+  readonly loadPolicy?: () => import("./policy-source.ts").LoadedPolicy
 }
 
 export function registerHooks(ctx: Plugin.Context, deps: HookDeps): Effect.Effect<void, never, Scope.Scope> {
@@ -48,7 +50,39 @@ export function registerHooks(ctx: Plugin.Context, deps: HookDeps): Effect.Effec
   const prompt = ctx.session.hook("prompt", (event) =>
     guard("session.prompt", () => {
       runtime.increment("promptObservations")
-      runtime.bindSessionPin({ sessionId: event.sessionID })
+      const loaded = deps.loadPolicy?.()
+      if (loaded !== undefined) {
+        runtime.noteRevokedDigests(loaded.revoked)
+        if (loaded.bundle !== null && loaded.digest !== null) {
+          runtime.bindSessionPin(
+            { sessionId: event.sessionID },
+            { id: loaded.bundle.id, digest: loaded.digest },
+            loaded.guidanceEnabled,
+          )
+          probe(runtime, {
+            event: "policy.bound",
+            sessionID: event.sessionID,
+            policyId: loaded.bundle.id,
+            digest: loaded.digest,
+            guidanceEnabled: loaded.guidanceEnabled,
+            error: loaded.error ?? null,
+          })
+        } else {
+          runtime.bindSessionPin({ sessionId: event.sessionID }, undefined, false)
+          probe(runtime, {
+            event: "policy.bound",
+            sessionID: event.sessionID,
+            policyId: "baseline-observe-only",
+            digest: null,
+            guidanceEnabled: false,
+            error: loaded.error ?? null,
+          })
+        }
+      } else {
+        // Without a policy file, the operator-provided advisory note is the
+        // governing guidance for the session.
+        runtime.bindSessionPin({ sessionId: event.sessionID }, undefined, runtime.options.advisoryNote !== null)
+      }
       const text = typeof event.prompt.text === "string" ? event.prompt.text : ""
       const envelope = runtime.record({
         type: "prompt.observed",
@@ -93,6 +127,17 @@ export function registerHooks(ctx: Plugin.Context, deps: HookDeps): Effect.Effec
 
       const note = runtime.options.advisoryNote
       if (note === null) return
+      const gate = runtime.guidanceGate(event.sessionID)
+      if (gate !== "deliver") {
+        if (gate === "revoked") {
+          runtime.increment("policyRevokedSessions")
+          runtime.record({ type: "guidance.suppressed.revoked", sessionId: event.sessionID, agentId: event.agent })
+        } else {
+          runtime.increment("guidanceSuppressedByPolicy")
+        }
+        probe(runtime, { event: "guidance.suppressed", sessionID: event.sessionID, reason: gate })
+        return
+      }
       const key = `${event.sessionID}\u0000${correlationDigest(note)}`
       if (injectedSessions.has(key)) {
         runtime.increment("guidanceSuppressedByDedup")

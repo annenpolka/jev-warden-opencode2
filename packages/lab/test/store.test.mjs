@@ -1,9 +1,19 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { ingestLines, openLab, summary } from "../src/store.mjs"
+import {
+  activePolicy,
+  policyHistory,
+  promotePolicy,
+  revokePolicy,
+  rollbackPolicy,
+  saveCandidate,
+  saveEpisode,
+  writeActivePolicyFile,
+} from "../src/store.mjs"
 
 function envelope(sequence, overrides = {}) {
   const serverEpoch = overrides.serverEpoch ?? "epoch-1"
@@ -68,6 +78,59 @@ test("lab store: malformed lines are counted, not stored", () => {
     const result = ingestLines(db, ["not json", JSON.stringify({ id: "x" }), JSON.stringify(envelope(1))])
     assert.equal(result.invalid, 2)
     assert.equal(result.inserted, 1)
+    db.close()
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test("lab policy: promote, rollback and revoke move the pointer with history", () => {
+  const dir = mkdtempSync(join(tmpdir(), "jw-lab-"))
+  try {
+    const db = openLab(join(dir, "lab.db"))
+    assert.equal(activePolicy(db).status, "baseline")
+    assert.throws(() => promotePolicy(db, { bundleId: "missing", digest: "x", evaluationRef: "e" }))
+    saveCandidate(db, { id: "candidate-1", digest: "digest-1", bundle: { schemaVersion: "warden.policy/0.1", id: "candidate-1" } })
+    assert.throws(() => promotePolicy(db, { bundleId: "candidate-1", digest: "wrong", evaluationRef: "e" }))
+    assert.equal(activePolicy(db).status, "baseline", "a failed promote must not move the pointer")
+
+    const promoted = promotePolicy(db, { bundleId: "candidate-1", digest: "digest-1", evaluationRef: "eval-1" })
+    assert.equal(promoted.status, "active")
+    assert.equal(promoted.bundleId, "candidate-1")
+    const rolled = rollbackPolicy(db, { evaluationRef: "eval-2" })
+    assert.equal(rolled.status, "baseline")
+    revokePolicy(db, { digest: "digest-1", reason: "bad-candidate" })
+    const state = activePolicy(db)
+    assert.deepEqual(state.revoked.map((entry) => entry.digest), ["digest-1"])
+    assert.deepEqual(
+      policyHistory(db).map((entry) => entry.action),
+      ["revoke", "rollback", "promote"],
+    )
+
+    const exportPath = join(dir, "policy", "active.json")
+    const exported = writeActivePolicyFile(db, exportPath)
+    assert.equal(exported.status, "baseline")
+    assert.deepEqual(exported.revokedDigests, ["digest-1"])
+    const readBack = JSON.parse(readFileSync(exportPath, "utf8"))
+    assert.equal(readBack.schemaVersion, "warden.active-policy/0.1")
+    db.close()
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test("lab policy: an active candidate is exported with its bundle", () => {
+  const dir = mkdtempSync(join(tmpdir(), "jw-lab-"))
+  try {
+    const db = openLab(join(dir, "lab.db"))
+    const bundle = { schemaVersion: "warden.policy/0.1", id: "candidate-2", status: "candidate" }
+    saveCandidate(db, { id: "candidate-2", digest: "digest-2", bundle })
+    promotePolicy(db, { bundleId: "candidate-2", digest: "digest-2", evaluationRef: "eval-3" })
+    const exportPath = join(dir, "policy", "active.json")
+    writeActivePolicyFile(db, exportPath)
+    const readBack = JSON.parse(readFileSync(exportPath, "utf8"))
+    assert.equal(readBack.bundleId, "candidate-2")
+    assert.deepEqual(readBack.bundle, bundle)
     db.close()
   } finally {
     rmSync(dir, { recursive: true, force: true })

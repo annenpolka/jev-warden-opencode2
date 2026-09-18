@@ -22,6 +22,8 @@ export interface WardenOptions {
   readonly outboxPath: string | null
   /** Explicitly allow the outbox inside the location directory (watch for reload loops). */
   readonly allowOutboxInLocation: boolean
+  /** Active-policy JSON exported by the Lab. Relative paths resolve against the location directory. */
+  readonly policyPath: string | null
   /** Optional server id override for remote deployments. */
   readonly serverId: string | null
   /** Live Jev evaluation through the explicit review RPC. Disabled by default. */
@@ -52,6 +54,7 @@ export const DEFAULT_OPTIONS: WardenOptions = {
   probeLog: null,
   outboxPath: null,
   allowOutboxInLocation: false,
+  policyPath: null,
   serverId: null,
   jev: {
     enabled: false,
@@ -72,6 +75,7 @@ export function parseOptions(raw: Readonly<Record<string, unknown>> | undefined)
   const advisoryNote = optionalString(record.advisoryNote, "advisoryNote", errors)
   const probeLog = optionalString(record.probeLog, "probeLog", errors)
   const outboxPath = optionalString(record.outboxPath, "outboxPath", errors)
+  const policyPath = optionalString(record.policyPath, "policyPath", errors)
   const allowOutboxInLocation = record.allowOutboxInLocation === true
   if (record.allowOutboxInLocation !== undefined && typeof record.allowOutboxInLocation !== "boolean") {
     errors.push("allowOutboxInLocation must be a boolean")
@@ -115,6 +119,7 @@ export function parseOptions(raw: Readonly<Record<string, unknown>> | undefined)
     probeLog,
     outboxPath,
     allowOutboxInLocation,
+    policyPath,
     serverId,
     jev,
   }
@@ -147,11 +152,13 @@ function parseJevOptions(value: unknown, errors: string[]): JevOptions {
       errors.push("jev.timeoutMs must be a positive number")
     }
   }
-  const endpoint = typeof record.endpoint === "string" && record.endpoint.startsWith("https://")
-    ? record.endpoint
-    : defaults.endpoint
+  const endpoint =
+    typeof record.endpoint === "string" &&
+    (record.endpoint.startsWith("https://") || /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(record.endpoint))
+      ? record.endpoint
+      : defaults.endpoint
   if (record.endpoint !== undefined && endpoint !== record.endpoint) {
-    errors.push("jev.endpoint must be an https URL")
+    errors.push("jev.endpoint must be an https URL (http is accepted only for 127.0.0.1/localhost test endpoints)")
   }
   const model = isNonBlank(record.model) ? record.model : defaults.model
   if (record.model !== undefined && !isNonBlank(record.model)) errors.push("jev.model must be a nonempty string")

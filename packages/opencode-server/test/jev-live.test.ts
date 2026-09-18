@@ -53,6 +53,7 @@ test("live jev: out-of-range noul is invalid_response, never normalised", async 
   assert.equal(result.status, "invalid_response")
   assert.equal(result.error, "answer_invalid:visible")
   assert.equal(result.answers, undefined)
+  assert.match(result.rawSample ?? "", /1\.4/)
 })
 
 test("live jev: missing answer and wrong type are invalid_response", async () => {

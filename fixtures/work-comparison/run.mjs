@@ -43,7 +43,7 @@ const timeoutMs = Number(args.timeout ?? 180_000)
 const expected = "3"
 const MIN_TRIALS_FOR_ADOPTION = 8
 
-const GUIDANCE = "The constant EXPECTED_CALLS is defined in test/constants.ts."
+const GUIDANCE = "The constant EXPECTED_CALLS is defined in config/limits.ts."
 const QUESTION =
   "Read the project in the current directory, then answer: what is the expected total number of " +
   "notifications asserted by the test? End your reply with a line exactly: ANSWER: <integer>"
@@ -57,6 +57,9 @@ const ARMS = [
 function writeFixture(dir) {
   mkdirSync(join(dir, "src"), { recursive: true })
   mkdirSync(join(dir, "test"), { recursive: true })
+  mkdirSync(join(dir, "config"), { recursive: true })
+  // A small but non-trivial tree: the constant is not in the test file, and
+  // finding it takes a few reads unless the guidance points at it.
   writeFileSync(
     join(dir, "test/notify.test.ts"),
     `import { test, expect } from "vitest"\n` +
@@ -67,7 +70,7 @@ function writeFixture(dir) {
       `  expect(calls.length).toBe(EXPECTED_CALLS)\n` +
       `})\n`,
   )
-  writeFileSync(join(dir, "test/constants.ts"), `export const EXPECTED_CALLS = ${expected}\n`)
+  writeFileSync(join(dir, "config/limits.ts"), `export const EXPECTED_CALLS = ${expected}\n`)
   writeFileSync(
     join(dir, "src/notify.ts"),
     `export async function notifyUser(\n` +
@@ -77,6 +80,15 @@ function writeFixture(dir) {
       `  await transport.send(\`event:\${event.id}\`)\n` +
       `}\n`,
   )
+  for (let index = 0; index < 14; index += 1) {
+    mkdirSync(join(dir, "src/modules"), { recursive: true })
+    writeFileSync(
+      join(dir, "src/modules", `module-${index}.ts`),
+      `export const MODULE_${index} = ${index}\nexport function helper${index}(value: number) {\n  return value + ${index}\n}\n`,
+    )
+  }
+  writeFileSync(join(dir, "config/runtime.ts"), "export const RUNTIME_TIMEOUT_MS = 5000\n")
+  writeFileSync(join(dir, "config/retry.ts"), "export const RETRY_LIMIT = 4\n")
   writeFileSync(
     join(dir, "package.json"),
     JSON.stringify({ name: "work-comparison-fixture", private: true, type: "module" }, null, 2) + "\n",
@@ -185,40 +197,48 @@ async function main() {
   const improvement = candidate !== null && baseline !== null ? candidate - baseline : null
   const nonInferior = candidate !== null && baseline !== null ? candidate >= baseline : null
   const enoughTrials = trials >= MIN_TRIALS_FOR_ADOPTION
+  const toolCallsBetter =
+    byArm.candidate.meanToolCalls !== null && byArm.baseline.meanToolCalls !== null
+      ? byArm.candidate.meanToolCalls < byArm.baseline.meanToolCalls
+      : null
+  const promotionRecommended = enoughTrials && nonInferior === true && toolCallsBetter === true
 
   const decision = {
     schemaVersion: "warden.work-comparison/0.1",
     at: Date.now(),
     model,
-    task: "read the quoted constant and report the expected notification count",
+    task: "find the constant referenced by the test and report the expected notification count",
     expected,
     guidance: GUIDANCE,
     preRegistered: {
       primaryMetric: "correctness (ANSWER == expected)",
-      secondaryMetric: "duration",
+      secondaryMetric: "mean tool calls",
+      adoptionRule: "candidate correct >= baseline correct AND candidate mean tool calls < baseline mean tool calls, at >= 8 trials per arm",
       minTrialsForAdoption: MIN_TRIALS_FOR_ADOPTION,
     },
     byArm,
     comparison: {
       candidateMinusBaselineAccuracy: improvement,
       nonInferior,
+      toolCallsBetter,
       improvementObserved: improvement !== null && improvement > 0,
       enoughTrials,
     },
+    promotionRecommended,
     decision: !enoughTrials
       ? "hold"
       : nonInferior === false
         ? "reject"
-        : improvement !== null && improvement > 0
-          ? "hold_for_larger_evaluation"
+        : promotionRecommended
+          ? "promote_recommended"
           : "hold",
     reason: !enoughTrials
       ? `only ${trials} trials per arm; adoption requires at least ${MIN_TRIALS_FOR_ADOPTION}`
       : nonInferior === false
         ? "candidate accuracy was lower than baseline"
-        : improvement !== null && improvement > 0
-          ? "improvement observed, but the evaluation volume is still below the pre-registered minimum"
-          : "no difference detected between arms",
+        : promotionRecommended
+          ? "correctness was non-inferior and mean tool calls were lower than baseline"
+          : "correctness was non-inferior but the secondary metric did not improve",
   }
 
   const outDir = resolve(process.cwd(), args.out ?? `checks/work-comparison/${new Date().toISOString().slice(0, 10)}`)
