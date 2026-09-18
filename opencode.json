@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "watcher": {
+    "ignore": [".warden/**"]
+  },
+  "plugins": [
+    {
+      "package": "./packages/opencode-server",
+      "options": {
+        "mode": "observe",
+        "outboxPath": ".warden/outbox.jsonl",
+        "allowOutboxInLocation": true,
+        "jev": {
+          "enabled": false
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@jev-warden/lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "ingest": "node src/ingest.mjs",
+    "report": "node src/report.mjs",
+    "test": "node --test \"test/*.test.mjs\""
+  }
+}

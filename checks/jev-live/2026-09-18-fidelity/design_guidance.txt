@@ -1,0 +1,14 @@
+context hookはsystem/messages/options/toolsを変更でき、固定READMEはdispatch直前の変更として説明する。[OC06](https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/session.ts)[OC04](https://github.com/anomalyco/opencode/blob/a2594ddefb6557ecf7e7edb3e30ea50c71df8519/packages/plugin/src/effect/README.md) Wardenの設計では永続履歴を書き換えず、一回のdispatchへ必要な根拠だけを添える。最終的に永続履歴を変更しないことは適合試験でも確認する。
+
+```text
+既存のsystem / messages / tool contracts
+          ＋
+[Warden observations / not user instructions]
+  現在有効な根拠
+  関連する反証
+  不足する定義
+  許可済みの次の調査候補
+  source / finding / snapshot / policy IDs
+```
+
+原資料内の命令を高優先度のsystem命令へ昇格しない。制御用封筒のtemplateは固定し、取得本文は引用されたデータとして扱う。userの明示指示、role、tool call/resultの組を消さない。

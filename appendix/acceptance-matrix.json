@@ -428,8 +428,13 @@
       "scenario": "候補/旧版/無介入E2E",
       "requiredInvariant": "判断精度と作業改善を別々に測る",
       "phase": "4",
-      "status": "NOT_RUN",
-      "evidenceRefs": []
+      "status": "PASSED",
+      "evidenceRefs": [
+        "checks/work-comparison/2026-09-18/decision.json",
+        "checks/jev-live/2026-09-18-specific-sufficiency/decision.json",
+        "checks/host-conformance-2.0.7.json#EXTRA-JEV-LIVE"
+      ],
+      "statusNote": "3アーム（無介入/observe-only/advisory）をdeepseek-flashで各3試行。正しさとtool呼出数を別々に測定。採用閾値は各アーム8試行の事前登録で、今回はhold。判断精度は別途Jev観測で測定。"
     },
     {
       "id": "OC2-046",
@@ -467,11 +472,14 @@
     "baseline": "checks/host-baseline-2.0.7.json",
     "modelCalls": "local OpenAI-compatible mock only (127.0.0.1); no external API spend",
     "jev": "live jev-latest (returned jev-1.13.0) through the explicit review RPC; synthetic fixtures only",
-    "budget": "Jev requests capped per plugin activation; the live conformance case enforces maxRequests=2"
+    "budget": "Jev requests capped per plugin activation; the live conformance case enforces maxRequests=2",
+    "workComparison": "deepseek/deepseek-flash, 3 arms x 3 trials (checks/work-comparison/2026-09-18)",
+    "lab": "SQLite ingest of the live outbox; 11 events, contiguous ack 11, re-ingest duplicate-safe"
   },
   "notes": [
     "PASSED entries cite checks/host-conformance-2.0.7.json and were executed against the installed host.",
     "NOT_RUN entries remain not executed; do not read the changed runtimeTestsExecuted flag as full coverage.",
-    "statusNote records the exact scope of each executed case, including what was not exercised."
+    "statusNote records the exact scope of each executed case, including what was not exercised.",
+    "OC2-045 was executed at a smaller volume than the pre-registered adoption threshold; the decision remains hold."
   ]
 }

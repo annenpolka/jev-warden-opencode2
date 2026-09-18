@@ -1,0 +1,19 @@
+--- runtime.ts record() location derivation and unresolved marking:
+    const locationDerived = input.sessionId !== undefined && input.hostLocationVerified !== true
+    if (locationDerived) this.unresolvedScopeEvents += 1
+    const pin =
+      input.sessionId === undefined
+        ? undefined
+        : this.pinFor({ sessionId: input.sessionId, ...(input.agentId === undefined ? {} : { agentId: input.agentId }) })
+    const envelope: EventEnvelope = {
+      id: `wev_${this.serverEpoch}_${this.sequence}`,
+      sequence: this.sequence,
+      serverId: this.serverId,
+      serverEpoch: this.serverEpoch,
+      locationId: this.locationId,
+      projectId: this.projectId,
+      worktreeId: this.worktreeId,
+      ...(locationDerived ? { unresolvedFields: ["projectId", "worktreeId"] } : {}),
+      ...(input.sessionId === undefined ? {} : { sessionId: input.sessionId }),
+      ...(input.agentId === undefined ? {} : { agentId: input.agentId }),
+      hostIds: input.hostIds ?? {},

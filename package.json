@@ -12,6 +12,9 @@
     "test": "npm run test --workspaces --if-present",
     "conformance": "node fixtures/host-contracts/run-host-conformance.mjs --out checks/host-conformance-2.0.7.json",
     "conformance:live": "JW_LIVE_JEV=1 node fixtures/host-contracts/run-host-conformance.mjs --out checks/host-conformance-2.0.7.json",
+    "lab:ingest": "node packages/lab/src/ingest.mjs --db .warden/lab.db --outbox .warden/outbox.jsonl",
+    "lab:report": "node packages/lab/src/report.mjs --db .warden/lab.db",
+    "work:compare": "node fixtures/work-comparison/run.mjs --model deepseek/deepseek-flash --trials 3",
     "doctor": "node packages/doctor/src/main.ts"
   },
   "devDependencies": {

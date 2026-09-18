@@ -39,6 +39,12 @@ export interface EventEnvelope {
   readonly observedAt: number
   /** Digest of the payload stored in the content-addressed store. */
   readonly payloadDigest?: string
+  /**
+   * Scope fields that were derived from the plugin instance location (or are
+   * otherwise unverified) for this event. An empty list means every recorded
+   * scope value was verified against the event itself.
+   */
+  readonly unresolvedFields?: readonly string[]
 }
 
 export function validateEnvelope(envelope: EventEnvelope): void {
@@ -55,6 +61,11 @@ export function validateEnvelope(envelope: EventEnvelope): void {
     ["observedAt", envelope.observedAt],
   ] as const) {
     if (!Number.isFinite(value) || value < 0) throw new TypeError(`envelope.${label} must be a timestamp`)
+  }
+  if (envelope.unresolvedFields !== undefined) {
+    for (const [index, field] of envelope.unresolvedFields.entries()) {
+      nonBlank(field, `envelope.unresolvedFields[${index}]`)
+    }
   }
 }
 

@@ -20,6 +20,7 @@ import {
   scanForCredentials,
   scopeKey,
   toolAfterOutcome,
+  validateEnvelope,
   validatePolicyBundle,
   validateScope,
   type EventEnvelope,
@@ -246,6 +247,23 @@ test("learning scheduling: only the authorized scheduler on main work", () => {
 
 test("canonical json sorts keys for stable digest input", () => {
   assert.equal(canonicalJson({ b: 1, a: { d: 2, c: 3 } }), '{"a":{"c":3,"d":2},"b":1}')
+})
+
+test("envelope: unresolved scope fields are validated and never silently blank", () => {
+  const base = {
+    id: "wev_1",
+    sequence: 1,
+    serverId: "server-a",
+    serverEpoch: "epoch-1",
+    locationId: "loc-a",
+    hostIds: {},
+    origin: "main_work" as const,
+    type: "prompt.observed",
+    occurredAt: 1,
+    observedAt: 2,
+  }
+  validateEnvelope({ ...base, unresolvedFields: ["projectId", "worktreeId"] })
+  assert.throws(() => validateEnvelope({ ...base, unresolvedFields: [""] }))
 })
 
 test("redaction: reports categories and locations, never the matched value", () => {

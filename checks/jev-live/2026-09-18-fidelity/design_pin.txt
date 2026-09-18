@@ -1,0 +1,12 @@
+採用済みbundleをLabから取得し、schema・digest・scope・host/model互換性を検証する。session開始時にpolicyをpinし、通常の更新は新しいsessionへ適用する。既存sessionの評価中にcandidateへすり替えない。
+
+```text
+Lab active pointer: v12 → v13
+既存session A: v12のまま
+新規session B: v13
+緊急失効: Aのadvisoryを停止し、理由を明示
+```
+
+roll backは次のpolicy適用を戻すことであり、過去のコード変更や外部操作を戻すことではない。問題版が関わった成果物には再確認を付ける。
+
+server再起動は新しいsession開始とは限らない。既存sessionをresumeする時は、Labに保存した元のpolicy pinを復元する。新server epochへの対応を検証してから再bindし、復元できない場合はactive最新版へ自動置換せず保留する。旧epochの処理中結果は破棄するが、pinの履歴自体は失わない。

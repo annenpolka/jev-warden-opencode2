@@ -1,0 +1,190 @@
+{
+  "db": "/Users/annenpolka/ghq/github.com/annenpolka/jev-warden-opencode2/.warden/lab.db",
+  "events": 410,
+  "types": [
+    {
+      "type": "tool.completed",
+      "count": 103
+    },
+    {
+      "type": "tool.requested",
+      "count": 102
+    },
+    {
+      "type": "permission.evaluated",
+      "count": 102
+    },
+    {
+      "type": "context.observed",
+      "count": 90
+    },
+    {
+      "type": "prompt.observed",
+      "count": 13
+    }
+  ],
+  "streams": [
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a2ift_quc7qif8",
+      "ack_sequence": 113
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a44y8_tbknnvg9",
+      "ack_sequence": 17
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a4ab3_9bc6ijst",
+      "ack_sequence": 9
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a4epw_wh9entoq",
+      "ack_sequence": 12
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a5i51_lkweyl3q",
+      "ack_sequence": 13
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a5mzb_t5pysu7p",
+      "ack_sequence": 20
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a5t65_5i33l2t0",
+      "ack_sequence": 9
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a5xhq_twwny0i1",
+      "ack_sequence": 14
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a631s_ui8fr81w",
+      "ack_sequence": 35
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a6bjx_1mrqrxk9",
+      "ack_sequence": 22
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a6j19_yxqbl4ap",
+      "ack_sequence": 14
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a6pkt_6ij6xzbj",
+      "ack_sequence": 24
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6a6w2i_bjbucj76",
+      "ack_sequence": 17
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6acln7_s3evckxi",
+      "ack_sequence": 6
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6aedj3_9nc1vxj8",
+      "ack_sequence": 51
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6ajeif_du9ihoam",
+      "ack_sequence": 4
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6ajqvu_u5rv5n4l",
+      "ack_sequence": 4
+    },
+    {
+      "server_id": "local-server:5ae2b448262822e9622c1e56d528f89b532cb1d1",
+      "server_epoch": "epoch_mu6ak9ie_5okvx9wx",
+      "ack_sequence": 26
+    }
+  ],
+  "recent": [
+    {
+      "id": "wev_epoch_mu6aedj3_9nc1vxj8_8",
+      "sequence": 8,
+      "type": "tool.requested",
+      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
+      "observed_at": 1789695361768
+    },
+    {
+      "id": "wev_epoch_mu6aedj3_9nc1vxj8_9",
+      "sequence": 9,
+      "type": "permission.evaluated",
+      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
+      "observed_at": 1789695361769
+    },
+    {
+      "id": "wev_epoch_mu6aedj3_9nc1vxj8_10",
+      "sequence": 10,
+      "type": "prompt.observed",
+      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
+      "observed_at": 1789695368863
+    },
+    {
+      "id": "wev_epoch_mu6aedj3_9nc1vxj8_11",
+      "sequence": 11,
+      "type": "tool.completed",
+      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
+      "observed_at": 1789695382152
+    },
+    {
+      "id": "wev_epoch_mu6aedj3_9nc1vxj8_12",
+      "sequence": 12,
+      "type": "context.observed",
+      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
+      "observed_at": 1789695382211
+    },
+    {
+      "id": "wev_epoch_mu6aedj3_9nc1vxj8_13",
+      "sequence": 13,
+      "type": "tool.requested",
+      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
+      "observed_at": 1789695407111
+    },
+    {
+      "id": "wev_epoch_mu6aedj3_9nc1vxj8_14",
+      "sequence": 14,
+      "type": "permission.evaluated",
+      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
+      "observed_at": 1789695407113
+    },
+    {
+      "id": "wev_epoch_mu6aedj3_9nc1vxj8_15",
+      "sequence": 15,
+      "type": "tool.completed",
+      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
+      "observed_at": 1789695427336
+    },
+    {
+      "id": "wev_epoch_mu6aedj3_9nc1vxj8_16",
+      "sequence": 16,
+      "type": "context.observed",
+      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
+      "observed_at": 1789695427371
+    },
+    {
+      "id": "wev_epoch_mu6aedj3_9nc1vxj8_17",
+      "sequence": 17,
+      "type": "tool.requested",
+      "session_id": "ses_f4e0fb249ffe0Mu0X3RzMx1yUZ",
+      "observed_at": 1789695434964
+    }
+  ]
+}

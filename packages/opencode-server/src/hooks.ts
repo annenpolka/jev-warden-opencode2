@@ -48,6 +48,7 @@ export function registerHooks(ctx: Plugin.Context, deps: HookDeps): Effect.Effec
   const prompt = ctx.session.hook("prompt", (event) =>
     guard("session.prompt", () => {
       runtime.increment("promptObservations")
+      runtime.bindSessionPin({ sessionId: event.sessionID })
       const text = typeof event.prompt.text === "string" ? event.prompt.text : ""
       const envelope = runtime.record({
         type: "prompt.observed",

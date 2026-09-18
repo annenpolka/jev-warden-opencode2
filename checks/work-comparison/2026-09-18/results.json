@@ -1,0 +1,105 @@
+{
+  "model": "deepseek/deepseek-flash",
+  "trials": 3,
+  "results": [
+    {
+      "arm": "control",
+      "trial": 1,
+      "exitCode": 0,
+      "sessionID": "ses_f4dde937dffe9US4PfZhvlAag7",
+      "answer": 3,
+      "correct": true,
+      "toolCalls": 4,
+      "durationMs": 6265,
+      "outputSample": "I read the project. The relevant code is in `fixtures/work-comparison/run.mjs`, which builds a fixture whose test asserts:\n\n```ts\nexpect(calls.length).toBe(EXPECTED_CALLS)\n```\n\nand writes `test/constants.ts` with:\n\n```ts\nexport const EXPECTED_CALLS = ${expected}\n```\n\nwhere `const expected = \"3\"` (line 43). So the expected total number of notifications asserted by the test is **3**.\n\nANSWER: 3"
+    },
+    {
+      "arm": "control",
+      "trial": 2,
+      "exitCode": 0,
+      "sessionID": "ses_f4dde7affffeiSdONhWPjkBSGz",
+      "answer": 3,
+      "correct": true,
+      "toolCalls": 5,
+      "durationMs": 8029,
+      "outputSample": "`fixtures/work-comparison/run.mjs`): it generates a Vitest test whose assertion is `expect(calls.length).toBe(EXPECTED_CALLS)`, and `test/constants.ts` defines `export const EXPECTED_CALLS = 3`. The same value appears throughout `checks/jev-live/2026-09-18-specific-sufficiency` (`export const EXPECTED_CALLS = 3`).\n\nSo the expected total number of notifications asserted by the test is 3.\n\nANSWER: 3"
+    },
+    {
+      "arm": "control",
+      "trial": 3,
+      "exitCode": 0,
+      "sessionID": "ses_f4dde5ba4ffe6rSqcJRznFIBun",
+      "answer": 3,
+      "correct": true,
+      "toolCalls": 3,
+      "durationMs": 5588,
+      "outputSample": "The project is the jev-warden work-comparison harness. The test's expected notification count is pinned by the `expected = \"3\"` constant in `fixtures/work-comparison/run.mjs`, which writes `test/constants.ts` as `export const EXPECTED_CALLS = 3`, and the test asserts `calls.length` equals it.\n\nANSWER: 3"
+    },
+    {
+      "arm": "baseline",
+      "trial": 1,
+      "exitCode": 0,
+      "sessionID": "ses_f4dde45ccffeSwRBX4Uxwbw5mg",
+      "answer": 3,
+      "correct": true,
+      "toolCalls": 3,
+      "durationMs": 7215,
+      "outputSample": "The expected value is defined as the constant `expected = \"3\"` in `fixtures/work-comparison/run.mjs`, and the generated fixture writes `EXPECTED_CALLS = 3` into `test/constants.ts`, which the test asserts against via `expect(calls.length).toBe(EXPECTED_CALLS)`.\n\nANSWER: 3"
+    },
+    {
+      "arm": "baseline",
+      "trial": 2,
+      "exitCode": 0,
+      "sessionID": "ses_f4dde29a0ffeQ34PKbvWi2LDl4",
+      "answer": 3,
+      "correct": true,
+      "toolCalls": 9,
+      "durationMs": 11020,
+      "outputSample": "I read the project. The relevant test fixture is defined in `fixtures/work-comparison/run.mjs`: the test `notifies once per event` asserts `calls.length` equals `EXPECTED_CALLS`, and the generated `test/constants.ts` defines `EXPECTED_CALLS = 3` (also confirmed in `checks/jev-live/.../b-with-definition/definitions.txt` and `packages/core/test/core.test.ts`).\n\nANSWER: 3"
+    },
+    {
+      "arm": "baseline",
+      "trial": 3,
+      "exitCode": 0,
+      "sessionID": "ses_f4dddfe93ffeXvcj6mampOnk4z",
+      "answer": 3,
+      "correct": true,
+      "toolCalls": 5,
+      "durationMs": 9690,
+      "outputSample": "The project's work-comparison fixture writes a test that asserts `calls.length` against the constant `EXPECTED_CALLS`, defined in `test/constants.ts` as `expected`, which the harness sets to `\"3\"`.\n\n- `test/notify.test.ts`: `expect(calls.length).toBe(EXPECTED_CALLS)`\n- `test/constants.ts`: `export const EXPECTED_CALLS = 3`\n\nANSWER: 3"
+    },
+    {
+      "arm": "candidate",
+      "trial": 1,
+      "exitCode": 0,
+      "sessionID": "ses_f4dddd8baffe4g2XbQ1f6MuZlu",
+      "answer": 3,
+      "correct": true,
+      "toolCalls": 4,
+      "durationMs": 8473,
+      "outputSample": "The project's work-comparison fixture generates a test (`test/notify.test.ts`) that asserts `expect(calls.length).toBe(EXPECTED_CALLS)`, where `EXPECTED_CALLS` is defined in `test/constants.ts` as `3` (`run.mjs` line 43: `const expected = \"3\"`). This matches the harness's ground-truth sentinel for the question.\n\nANSWER: 3"
+    },
+    {
+      "arm": "candidate",
+      "trial": 2,
+      "exitCode": 0,
+      "sessionID": "ses_f4dddb795ffemmscdR7i3zhh89",
+      "answer": 3,
+      "correct": true,
+      "toolCalls": 6,
+      "durationMs": 8418,
+      "outputSample": " const EXPECTED_CALLS = 3`\n- `test/notify.test.ts`: `expect(calls.length).toBe(EXPECTED_CALLS)`\n- `src/notify.ts`: `notifyUser` calls `transport.send(...)` exactly once per event\n\nThe fixture is driven by `const expected = \"3\"` (line 43), and the sentinel check compares the model's `ANSWER:` value against that. So the expected total number of notifications asserted by the test is **3**.\n\nANSWER: 3"
+    },
+    {
+      "arm": "candidate",
+      "trial": 3,
+      "exitCode": 0,
+      "sessionID": "ses_f4ddd96bcffeDaph2ONBwux1aF",
+      "answer": 3,
+      "correct": true,
+      "toolCalls": 4,
+      "durationMs": 6550,
+      "outputSample": "The test fixture in `fixtures/work-comparison/run.mjs` builds a scratch project whose `test/notify.test.ts` asserts `calls.length` equals `EXPECTED_CALLS`, and `test/constants.ts` defines `EXPECTED_CALLS = 3` (from the `expected = \"3\"` constant).\n\nANSWER: 3"
+    }
+  ]
+}

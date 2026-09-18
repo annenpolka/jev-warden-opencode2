@@ -1,0 +1,41 @@
+--- imports and session-start path (hooks.ts):
+/**
+ * Host hook registration.
+ *
+ * Every callback is synchronous and wrapped so that a Warden failure becomes a
+ * recorded degradation instead of a host failure. Warden never mutates:
+ * - the user prompt or its delivery,
+ * - tool input, results or errors,
+ * - a native permission effect except to strengthen it per the fixed kernel
+ *   decision (deny-by-rule), never to weaken it.
+ */
+import { Effect, type Scope } from "effect"
+import type { Plugin } from "@opencode/plugin/effect"
+import {
+  canonicalJson,
+  composePermission,
+  correlationDigest,
+  parseNativeEffect,
+  renderAdvisoryBlock,
+  type KernelDecision,
+  type NativeEffect,
+} from "@jev-warden/core"
+import { appendFileSync } from "node:fs"
+import type { WardenRuntime } from "./runtime.ts"
+
+export interface HookDeps {
+  readonly runtime: WardenRuntime
+  readonly flushSpool: () => Effect.Effect<void>
+}
+
+export function registerHooks(ctx: Plugin.Context, deps: HookDeps): Effect.Effect<void, never, Scope.Scope> {
+--- prompt hook body:
+48:  const prompt = ctx.session.hook("prompt", (event) =>
+49-    guard("session.prompt", () => {
+50-      runtime.increment("promptObservations")
+51-      const text = typeof event.prompt.text === "string" ? event.prompt.text : ""
+52-      const envelope = runtime.record({
+53-        type: "prompt.observed",
+54-        sessionId: event.sessionID,
+--- pin usage in the server package:
+(no pin usage found)

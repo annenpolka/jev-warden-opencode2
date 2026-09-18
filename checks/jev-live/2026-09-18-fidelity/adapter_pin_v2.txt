@@ -1,0 +1,29 @@
+--- baseline policy constants:
+26:export const BASELINE_POLICY_ID = "baseline-observe-only"
+27-export const BASELINE_POLICY_DIGEST = correlationDigest(
+28-  "warden.policy.baseline/0.1:observe-only:no-guidance:no-permission-change",
+29-)
+--
+135:    return this.pins.pin(scope, { id: BASELINE_POLICY_ID, digest: BASELINE_POLICY_DIGEST })
+136-  }
+137-
+--- pin binding:
+  bindSessionPin(input: { readonly sessionId: string; readonly agentId?: string }): PolicyPin {
+    const scope = {
+      serverId: this.serverId,
+      serverEpoch: this.serverEpoch,
+      locationId: this.locationId,
+      projectId: this.projectId,
+      worktreeId: this.worktreeId,
+      sessionId: input.sessionId,
+      agentId: input.agentId ?? "unobserved",
+    }
+    return this.pins.pin(scope, { id: BASELINE_POLICY_ID, digest: BASELINE_POLICY_DIGEST })
+  }
+--- session-start path:
+49-    guard("session.prompt", () => {
+50-      runtime.increment("promptObservations")
+51:      runtime.bindSessionPin({ sessionId: event.sessionID })
+52-      const text = typeof event.prompt.text === "string" ? event.prompt.text : ""
+53-      const envelope = runtime.record({
+54-        type: "prompt.observed",

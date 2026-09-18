@@ -22,11 +22,15 @@ The compiled CLI bundles its own plugin implementation; the source commit `a2594
 packages/
   core/                pure TypeScript contracts (no host, Effect or Node imports)
   contracts/           shared RPC definition (imports @opencode/plugin/rpc only)
-  opencode-server/     Effect server plugin: hooks, spool, status, RPC
+  opencode-server/     Effect server plugin: hooks, spool, outbox, status, RPC, live Jev
   opencode-tui/        TUI plugin: status command over the read-only RPC
+  lab/                 SQLite store and outbox ingester
   doctor/              CLI that merges host facts and conformance results
 fixtures/
   host-contracts/      mock model server, probe plugin, scenario runner, baseline collector
+  jev-live/            episode runner and candidate/replay loop
+  work-comparison/     control / baseline / candidate work comparison
+opencode.json          load the server plugin in this repository (observe-only)
 appendix/              original design artifacts (unchanged except acceptance-matrix status)
 ```
 
@@ -37,6 +41,7 @@ appendix/              original design artifacts (unchanged except acceptance-ma
 - **Core invariants** (`packages/core`): scope validation and unresolved scope reporting, permission composition that never weakens (`deny → deny`, `ask → ask|deny`, unknown effect throws), session-scoped policy pins that ignore the active pointer and survive agent switches but not server-epoch/worktree changes, observation eligibility gates, terminal outcomes where a missing `execute.after` is `outcome_unknown`, intervention dedup keys, envelopes with explicit `unknown` host ids, data-only policy bundle validation that rejects executable keys, a dummy Jev transport that returns `unavailable` rather than a low probability, an in-memory Lab with idempotent ingestion and a contiguous ack cursor, fixed advisory rendering with role-prefix sanitising, and honest doctor aggregation (`PARTIAL` unless everything ran).
 - **Server plugin** (`packages/opencode-server`, Effect API): validates `ctx.options`, registers `prompt` / `context` / `title` / `generate` / `tool.execute.before` / `tool.execute.after` / `permission.evaluate` hooks, records envelopes into a bounded spool persisted through plugin storage, exposes read-only `status`, `snapshot.get`, `review.request` and `review.list` RPC methods with a `changed` event, and subscribes to the public event stream as notification-only. Live Jev is opt-in and only reachable through `review.request`; the request is probe-checked, credential-scanned and budget-limited. Every callback is guarded: a Warden error becomes a recorded `durability_degraded` / `hostCapabilitiesDegraded` flag, never a host error. Warden never rewrites the prompt, tool input, results or errors, and never lowers an observed permission effect.
 - **TUI plugin** (`packages/opencode-tui`): a minimal display client that calls `status` over the shared RPC contract and shows a toast; no inference, no learning jobs, no permission decisions.
+- **Lab** (`packages/lab`): SQLite store with idempotent ingestion by envelope id and a per-`(server, epoch)` ack cursor that only advances across a contiguous sequence. The server plugin appends a JSONL outbox; the Lab ingests it at-least-once.
 - **Doctor** (`packages/doctor`): combines installed-host facts, the collected baseline and the conformance results into `warden.doctor/0.1`. It never marks a check as passed by itself.
 - **Host-conformance harness** (`fixtures/host-contracts`): starts the installed host in a scratch project with the local OpenAI-compatible mock model on `127.0.0.1`, drives real sessions, and writes machine-readable results. No external network, no API spend, no user data leaves the machine.
 
@@ -45,11 +50,17 @@ appendix/              original design artifacts (unchanged except acceptance-ma
 ```bash
 npm install                 # workspace links + @opencode/plugin@2.0.7 and effect
 npm run typecheck           # every workspace
-npm test                    # pure Core tests (node --test, TypeScript type stripping)
+npm test                    # Core 14 + server 15 + Lab 3
 npm run conformance         # real host, local mock model (writes checks/host-conformance-2.0.7.json)
+npm run conformance:live    # same plus live Jev review cases (uses the OS credential store)
+npm run lab:ingest          # ingest .warden/outbox.jsonl into .warden/lab.db
+npm run lab:report          # print Lab totals, streams and recent events
+npm run work:compare        # 3-arm work comparison with deepseek-flash (real provider calls)
 node fixtures/host-contracts/collect-host-baseline.mjs --out checks/host-baseline-2.0.7.json --conformance checks/host-conformance-2.0.7.json
 node packages/doctor/src/main.ts --out checks/doctor.2.0.7.json --conformance checks/host-conformance-2.0.7.json
 ```
+
+In this repository, ordinary OpenCode sessions load Warden through `opencode.json` in observe-only mode; `.warden/outbox.jsonl` accumulates the durable outbox.
 
 The conformance runner needs `opencode` on `PATH`. It creates and removes its own scratch directories under the OS temp directory; sessions created against the installed host are deleted at the end of each scenario.
 
@@ -109,14 +120,62 @@ Evidence (2026-09-18, synthetic fixture only — no user, session or repository 
 
 Artifacts: `checks/jev-live/2026-09-18-specific-sufficiency/` (`request.json` / `response.json` per variant, `state-*.json`, `transport-*.json`, `episode-live.json`, `host-review-observations.json`, `candidate-bundle.json`, `comparison.json`, `decision.json`). Model returned: `jev-1.13.0`. The conformance cases `EXTRA-JEV-DISABLED` and `EXTRA-JEV-LIVE` are in `checks/host-conformance-2.0.7.json`; live Jev is opt-in for runs (`JW_LIVE_JEV=1` or `npm run conformance:live`).
 
+## Daily connection and durable Lab (executed)
+
+`opencode.json` in this repository loads the server plugin in observe-only mode with `jev.enabled: false` and `outboxPath: ".warden/outbox.jsonl"` (relative to the location). This makes Warden run in ordinary sessions in this repository.
+
+Evidence from the first live session after connecting:
+
+- `opencode plugin list` shows `jev-warden` active for this location.
+- The outbox filled while this conversation itself was running (tool requested/completed, permission evaluated, context observed), and this session's own id is in the records.
+- `node packages/lab/src/ingest.mjs` stored the outbox with contiguous per-epoch ack cursors; re-ingesting inserted 0 and reported only duplicates. Snapshot: `checks/lab-report-2026-09-18.json`.
+- The RPC status endpoint works from the running service (`opencode api POST /api/rpc/jev-warden/status -H "x-opencode-directory: <repo>"`), showing live counters for this session.
+
+Reload-loop incident and fix: writing the outbox inside the location directory originally fed the host's config watcher, and each append triggered a location reload (dozens of plugin generations, outbox inflated to ~180 KB). The plugin now refuses an inside-location outbox unless `allowOutboxInLocation` is explicitly set, and this repository additionally sets `watcher.ignore: [".warden/**"]`. Before the fix the log showed a load every ~8 s; after it, loads align only with deliberate file edits.
+
+This is still observe-only: no Jev call fires from hooks, prompt/tool/permission behavior is unchanged, and `.warden/` is git-ignored runtime data.
+
+## Spec fidelity crosschecks (jev-crosscheck, executed)
+
+Against `jev-warden-opencode2-design-v0.1.md`, using allowlisted excerpts only (design text + implementation code, no user content). Files: `checks/jev-live/2026-09-18-fidelity/`. Model returned `jev-1.13.0`.
+
+| assertion | before | after fix |
+|---|---|---|
+| scope fidelity (4.1: do not decide scope from `ctx.location` alone; mark unresolved) | 0.20 (sufficiency 0.38) | **0.91** (sufficiency 0.56) |
+| session policy pin (16.1: pin per session) | 0.06 (sufficiency 0.13) | **0.87** (sufficiency 0.92) |
+| guidance envelope (8.1: quoted data, not instructions) | 0.97 (sufficiency 0.74) | unchanged |
+
+The low answers matched code inspection, so two behaviors were changed rather than papered over:
+
+- `EventEnvelope` gained `unresolvedFields`; session events without their own verified location now record `["projectId","worktreeId"]` as unresolved instead of presenting location-derived values as session scope.
+- The runtime binds the built-in `baseline-observe-only` policy to a session at first observation through Core `SessionPins`; envelopes for that session carry the pinned id/digest, the pin is stable across agent switches, and `snapshot.get` reports `pinnedSessions`, `unresolvedScopeEvents` and the baseline policy. Adopted-bundle application is still not implemented.
+
+Probabilities are not acceptance: the fixes are confirmed by the Core and server tests (15 + 23) and by code review; the second crosscheck only guided where to look.
+
+## Work comparison (executed, small n)
+
+`fixtures/work-comparison/run.mjs` solves a fixed task with a real model in three arms and scores correctness with a deterministic sentinel, separately from tool-call count and duration. Thresholds are pre-registered in the script.
+
+Run of 2026-09-18 with `deepseek/deepseek-flash`, 3 trials per arm:
+
+| arm | correct | mean tool calls | mean duration |
+|---|---|---|---|
+| control (no Warden) | 3/3 | 4.0 | 6.6s |
+| baseline (Warden observe-only) | 3/3 | 5.67 | 9.3s |
+| candidate (Warden + fixed advisory) | 3/3 | 4.67 | 7.8s |
+
+Decision: **hold** — correctness did not separate, the tool-call difference is within noise at n=3, and the pre-registered minimum is 8 trials per arm. Artifacts: `checks/work-comparison/2026-09-18/`.
+
 ## Not implemented / not executed
 
 - Jev fault injection (429/timeout/invalid distribution), stale-snapshot application, cold/warm and language comparisons: `NOT_RUN`.
-- Lab handshake/outbox and durable episode storage: `NOT_RUN` (episodes are files here).
+- Adopted PolicyBundle application (fetch/validate/replace the baseline pin), bundle promotion and rollback: `NOT_RUN`; only the built-in baseline pin is bound.
+- Episode/candidate storage in the Lab (episodes are still files) and outbox ack-back to the plugin: `NOT_RUN`.
 - TUI plugin loading and slot rendering: `NOT_RUN` (no interactive TUI session was exercised).
-- Worktree/executor isolation, mutation testing, work-level comparison, promotion/rollback: `NOT_RUN`; the candidate above is held at `replay_passed`.
+- Work comparison at the pre-registered volume, adoption, rollback, retirement: `NOT_RUN`; the candidate from the episode is held.
+- Worktree/executor isolation and mutation testing: `NOT_RUN`.
 - Event-stream reconnect/dedup semantics, epoch change, multi-client controller lease: `NOT_RUN`.
-- Real provider models: every OpenCode model call in testing went to the local mock.
+- Real provider models beyond the small `deepseek-flash` work comparison: not used.
 
 ## Non-goals held in this change unit
 

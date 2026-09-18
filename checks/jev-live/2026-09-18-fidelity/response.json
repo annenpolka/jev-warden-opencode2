@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"scope_fidelity":{"type":"noul","noul":0.2},"scope_sufficiency":{"type":"noul","noul":0.38},"pin_fidelity":{"type":"noul","noul":0.06},"pin_sufficiency":{"type":"noul","noul":0.13},"guidance_fidelity":{"type":"noul","noul":0.97},"guidance_sufficiency":{"type":"noul","noul":0.74}},"usage":{"input_tokens":3234,"output_tokens":123}}

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "warden.work-comparison/0.1",
+  "at": 1789695001091,
+  "model": "deepseek/deepseek-flash",
+  "task": "read the quoted constant and report the expected notification count",
+  "expected": "3",
+  "guidance": "The constant EXPECTED_CALLS is defined in test/constants.ts.",
+  "preRegistered": {
+    "primaryMetric": "correctness (ANSWER == expected)",
+    "secondaryMetric": "duration",
+    "minTrialsForAdoption": 8
+  },
+  "byArm": {
+    "control": {
+      "trials": 3,
+      "correct": 3,
+      "accuracy": 1,
+      "meanDurationMs": 6627,
+      "meanToolCalls": 4
+    },
+    "baseline": {
+      "trials": 3,
+      "correct": 3,
+      "accuracy": 1,
+      "meanDurationMs": 9308,
+      "meanToolCalls": 5.67
+    },
+    "candidate": {
+      "trials": 3,
+      "correct": 3,
+      "accuracy": 1,
+      "meanDurationMs": 7814,
+      "meanToolCalls": 4.67
+    }
+  },
+  "comparison": {
+    "candidateMinusBaselineAccuracy": 0,
+    "nonInferior": true,
+    "improvementObserved": false,
+    "enoughTrials": false
+  },
+  "decision": "hold",
+  "reason": "only 3 trials per arm; adoption requires at least 8"
+}

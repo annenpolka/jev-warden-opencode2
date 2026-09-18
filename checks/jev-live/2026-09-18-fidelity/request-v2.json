@@ -1,0 +1,42 @@
+{
+  "state": {
+    "design_scope": "`ctx.location`は起動instanceの場所として扱い、それだけで受信する全sessionの実行場所を決めない。公開session情報とeventのlocation情報を照合し、解決できなければ`scope_unresolved`として原資料送信や実行を保留する。パス文字列やrepository名だけで同一性を判定しない。\n同じsession IDが別serverにもあり得る前提でnamespace化する。parent sessionのgrantは子sessionへ無条件継承せず、委譲範囲との積を取る。",
+    "adapter_scope": "--- runtime.ts record() location derivation and unresolved marking:\n    const locationDerived = input.sessionId !== undefined && input.hostLocationVerified !== true\n    if (locationDerived) this.unresolvedScopeEvents += 1\n    const pin =\n      input.sessionId === undefined\n        ? undefined\n        : this.pinFor({ sessionId: input.sessionId, ...(input.agentId === undefined ? {} : { agentId: input.agentId }) })\n    const envelope: EventEnvelope = {\n      id: `wev_${this.serverEpoch}_${this.sequence}`,\n      sequence: this.sequence,\n      serverId: this.serverId,\n      serverEpoch: this.serverEpoch,\n      locationId: this.locationId,\n      projectId: this.projectId,\n      worktreeId: this.worktreeId,\n      ...(locationDerived ? { unresolvedFields: [\"projectId\", \"worktreeId\"] } : {}),\n      ...(input.sessionId === undefined ? {} : { sessionId: input.sessionId }),\n      ...(input.agentId === undefined ? {} : { agentId: input.agentId }),\n      hostIds: input.hostIds ?? {},",
+    "design_pin": "採用済みbundleをLabから取得し、schema・digest・scope・host/model互換性を検証する。session開始時にpolicyをpinし、通常の更新は新しいsessionへ適用する。既存sessionの評価中にcandidateへすり替えない。\n\n```text\nLab active pointer: v12 → v13\n既存session A: v12のまま\n新規session B: v13\n緊急失効: Aのadvisoryを停止し、理由を明示\n```\n\nroll backは次のpolicy適用を戻すことであり、過去のコード変更や外部操作を戻すことではない。問題版が関わった成果物には再確認を付ける。\n\nserver再起動は新しいsession開始とは限らない。既存sessionをresumeする時は、Labに保存した元のpolicy pinを復元する。新server epochへの対応を検証してから再bindし、復元できない場合はactive最新版へ自動置換せず保留する。旧epochの処理中結果は破棄するが、pinの履歴自体は失わない。",
+    "adapter_pin": "--- baseline policy constants:\n26:export const BASELINE_POLICY_ID = \"baseline-observe-only\"\n27-export const BASELINE_POLICY_DIGEST = correlationDigest(\n28-  \"warden.policy.baseline/0.1:observe-only:no-guidance:no-permission-change\",\n29-)\n--\n135:    return this.pins.pin(scope, { id: BASELINE_POLICY_ID, digest: BASELINE_POLICY_DIGEST })\n136-  }\n137-\n--- pin binding:\n  bindSessionPin(input: { readonly sessionId: string; readonly agentId?: string }): PolicyPin {\n    const scope = {\n      serverId: this.serverId,\n      serverEpoch: this.serverEpoch,\n      locationId: this.locationId,\n      projectId: this.projectId,\n      worktreeId: this.worktreeId,\n      sessionId: input.sessionId,\n      agentId: input.agentId ?? \"unobserved\",\n    }\n    return this.pins.pin(scope, { id: BASELINE_POLICY_ID, digest: BASELINE_POLICY_DIGEST })\n  }\n--- session-start path:\n49-    guard(\"session.prompt\", () => {\n50-      runtime.increment(\"promptObservations\")\n51:      runtime.bindSessionPin({ sessionId: event.sessionID })\n52-      const text = typeof event.prompt.text === \"string\" ? event.prompt.text : \"\"\n53-      const envelope = runtime.record({\n54-        type: \"prompt.observed\","
+  },
+  "questions": {
+    "scope_fidelity_v2": {
+      "type": "noul",
+      "instructions": "Does `adapter_scope` keep project and worktree values that come from the plugin instance location out of per-session evidence, or mark them as unresolved, as `design_scope` requires for events whose own location is not verified?",
+      "criteria": {
+        "true": "The adapter either excludes location-derived fields from session evidence or records them with an unresolved marker when the event location is not verified",
+        "false": "The adapter writes location-derived project or worktree values into session evidence without an unresolved marker"
+      }
+    },
+    "scope_sufficiency_v2": {
+      "type": "noul",
+      "instructions": "Does the shown material state both where `projectId` and `worktreeId` values come from and whether session events without their own verified location mark those fields unresolved?",
+      "criteria": {
+        "true": "The material contains both the derivation of the values and the recording path with any unresolved marking",
+        "false": "One of the two is missing from the material"
+      }
+    },
+    "pin_fidelity_v2": {
+      "type": "noul",
+      "instructions": "Does `adapter_pin` read or bind a session policy pin at the point where a session first appears, as `design_pin` requires?",
+      "criteria": {
+        "true": "The shown session-start path reads or binds a policy pin",
+        "false": "The shown session-start path does not read or bind a policy pin, and the material shows no other pin binding"
+      }
+    },
+    "pin_sufficiency_v2": {
+      "type": "noul",
+      "instructions": "Does the shown material include the code path that runs when a session first appears and any policy or pin lookup performed on it?",
+      "criteria": {
+        "true": "The material includes the session-start handler and shows whether a policy or pin lookup occurs",
+        "false": "The material omits the session-start handler or leaves the policy or pin lookup unshown"
+      }
+    }
+  }
+}

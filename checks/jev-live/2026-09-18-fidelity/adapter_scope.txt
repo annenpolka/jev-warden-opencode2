@@ -1,0 +1,61 @@
+    Effect.gen(function* () {
+      const parsed = parseOptions(ctx.options)
+      const projectId = ctx.location?.project?.id ?? "unknown-project"
+      const canonical = ctx.location?.project?.canonical ?? ctx.location?.directory ?? "unknown-location"
+      const worktreeId = `wt_${correlationDigest(canonical).slice(-16)}`
+      const runtime = new WardenRuntime({
+        options: parsed.options,
+        optionErrors: parsed.errors,
+        locationDirectory: ctx.location?.directory ?? "unknown-location",
+        projectId,
+        worktreeId,
+--- runtime.ts record():
+    // connected server, so evidence must not be sent off-host.
+    this.flags.scopeUnresolved = input.options.serverId === null
+    this.flags.jevUnavailable = true
+  }
+
+  setChangedEmitter(emitter: (reason: string) => void): void {
+    this.changedEmitter = emitter
+  }
+
+  record(input: RecordInput): EventEnvelope {
+    this.counter += 1
+    this.sequence += 1
+    const now = Date.now()
+    const envelope: EventEnvelope = {
+      id: `wev_${this.serverEpoch}_${this.sequence}`,
+      sequence: this.sequence,
+      serverId: this.serverId,
+      serverEpoch: this.serverEpoch,
+      locationId: this.locationId,
+      projectId: this.projectId,
+      worktreeId: this.worktreeId,
+      ...(input.sessionId === undefined ? {} : { sessionId: input.sessionId }),
+      ...(input.agentId === undefined ? {} : { agentId: input.agentId }),
+      hostIds: input.hostIds ?? {},
+      origin: input.origin ?? "main_work",
+      type: input.type,
+      ...(input.policyId === undefined ? {} : { policyId: input.policyId }),
+      ...(input.policyDigest === undefined ? {} : { policyDigest: input.policyDigest }),
+      ...(input.snapshotId === undefined ? {} : { snapshotId: input.snapshotId }),
+      occurredAt: input.hostOccurredAt ?? now,
+      observedAt: now,
+      ...(input.payloadDigest === undefined ? {} : { payloadDigest: input.payloadDigest }),
+    }
+    this.spool.push(envelope)
+    if (this.spool.length > SPOOL_LIMIT) {
+      this.spool.shift()
+      this.counters.droppedEvents += 1
+      this.durabilityDegraded = true
+    }
+    this.updatedAt = now
+    this.changedEmitter?.(input.type)
+    return envelope
+  }
+
+  increment(counter: keyof WardenCounters, by = 1): void {
+    this.counters[counter] += by
+--- runtime.ts constructor flags:
+101:    this.flags.scopeUnresolved = input.options.serverId === null
+210:    const unresolved = this.flags.scopeUnresolved ? " scope unresolved" : ""

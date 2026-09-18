@@ -10,15 +10,23 @@ import {
   correlationDigest,
   emptyCounters,
   emptyFlags,
+  SessionPins,
   type EventEnvelope,
   type HostIds,
   type NativeEffect,
+  type PolicyPin,
   type WardenCounters,
   type WardenFlags,
   type WardenStatus,
   type WorkOrigin,
 } from "@jev-warden/core"
 import type { WardenOptions } from "./options.ts"
+
+/** Built-in baseline pin used until an adopted bundle exists. */
+export const BASELINE_POLICY_ID = "baseline-observe-only"
+export const BASELINE_POLICY_DIGEST = correlationDigest(
+  "warden.policy.baseline/0.1:observe-only:no-guidance:no-permission-change",
+)
 
 export interface ScopeProvenance {
   /** True when the adapter could resolve this field from host data, not from ctx.location inference. */
@@ -48,6 +56,8 @@ export interface RecordInput {
   readonly snapshotId?: string
   readonly policyId?: string
   readonly policyDigest?: string
+  /** True only when the event itself carried a location verified against the session. */
+  readonly hostLocationVerified?: boolean
 }
 
 export const PLUGIN_ID = "jev-warden"
@@ -69,8 +79,10 @@ export class WardenRuntime {
   private readonly flags: { -readonly [K in keyof WardenFlags]: boolean }
   private readonly spool: EventEnvelope[] = []
   private readonly pending = new Map<string, PendingToolCall>()
+  private readonly pins = new SessionPins()
   private sequence = 0
   private counter = 0
+  private unresolvedScopeEvents = 0
   private lastPermissionEffect?: NativeEffect
   private lastEventType?: string
   private readonly eventTypes = new Map<string, number>()
@@ -106,10 +118,46 @@ export class WardenRuntime {
     this.changedEmitter = emitter
   }
 
+  /**
+   * Binds the built-in baseline policy to a session at first observation. A
+   * later adopted bundle may replace the baseline only through a new session.
+   */
+  bindSessionPin(input: { readonly sessionId: string; readonly agentId?: string }): PolicyPin {
+    const scope = {
+      serverId: this.serverId,
+      serverEpoch: this.serverEpoch,
+      locationId: this.locationId,
+      projectId: this.projectId,
+      worktreeId: this.worktreeId,
+      sessionId: input.sessionId,
+      agentId: input.agentId ?? "unobserved",
+    }
+    return this.pins.pin(scope, { id: BASELINE_POLICY_ID, digest: BASELINE_POLICY_DIGEST })
+  }
+
+  pinFor(input: { readonly sessionId: string; readonly agentId?: string }): PolicyPin | undefined {
+    const read = this.pins.read({
+      serverId: this.serverId,
+      serverEpoch: this.serverEpoch,
+      locationId: this.locationId,
+      projectId: this.projectId,
+      worktreeId: this.worktreeId,
+      sessionId: input.sessionId,
+      agentId: input.agentId ?? "unobserved",
+    })
+    return read.kind === "missing" ? undefined : read.pin
+  }
+
   record(input: RecordInput): EventEnvelope {
     this.counter += 1
     this.sequence += 1
     const now = Date.now()
+    const locationDerived = input.sessionId !== undefined && input.hostLocationVerified !== true
+    if (locationDerived) this.unresolvedScopeEvents += 1
+    const pin =
+      input.sessionId === undefined
+        ? undefined
+        : this.pinFor({ sessionId: input.sessionId, ...(input.agentId === undefined ? {} : { agentId: input.agentId }) })
     const envelope: EventEnvelope = {
       id: `wev_${this.serverEpoch}_${this.sequence}`,
       sequence: this.sequence,
@@ -118,13 +166,22 @@ export class WardenRuntime {
       locationId: this.locationId,
       projectId: this.projectId,
       worktreeId: this.worktreeId,
+      ...(locationDerived ? { unresolvedFields: ["projectId", "worktreeId"] } : {}),
       ...(input.sessionId === undefined ? {} : { sessionId: input.sessionId }),
       ...(input.agentId === undefined ? {} : { agentId: input.agentId }),
       hostIds: input.hostIds ?? {},
       origin: input.origin ?? "main_work",
       type: input.type,
-      ...(input.policyId === undefined ? {} : { policyId: input.policyId }),
-      ...(input.policyDigest === undefined ? {} : { policyDigest: input.policyDigest }),
+      ...(input.policyId === undefined
+        ? pin === undefined
+          ? {}
+          : { policyId: pin.policyId }
+        : { policyId: input.policyId }),
+      ...(input.policyDigest === undefined
+        ? pin === undefined
+          ? {}
+          : { policyDigest: pin.policyDigest }
+        : { policyDigest: input.policyDigest }),
       ...(input.snapshotId === undefined ? {} : { snapshotId: input.snapshotId }),
       occurredAt: input.hostOccurredAt ?? now,
       observedAt: now,
@@ -227,6 +284,9 @@ export class WardenRuntime {
       lastEventType: this.lastEventType ?? null,
       optionErrors: this.optionErrors,
       eventTypes: Object.fromEntries(this.eventTypes),
+      pinnedSessions: this.pins.size,
+      unresolvedScopeEvents: this.unresolvedScopeEvents,
+      baselinePolicy: { id: BASELINE_POLICY_ID, digest: BASELINE_POLICY_DIGEST },
     }
   }
 

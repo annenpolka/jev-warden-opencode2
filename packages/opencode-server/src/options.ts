@@ -18,6 +18,10 @@ export interface WardenOptions {
   readonly denyActions: readonly string[]
   /** Optional JSONL path for host-conformance evidence. Not for production use. */
   readonly probeLog: string | null
+  /** Optional JSONL outbox that the Lab ingests. Relative paths resolve against the location directory. */
+  readonly outboxPath: string | null
+  /** Explicitly allow the outbox inside the location directory (watch for reload loops). */
+  readonly allowOutboxInLocation: boolean
   /** Optional server id override for remote deployments. */
   readonly serverId: string | null
   /** Live Jev evaluation through the explicit review RPC. Disabled by default. */
@@ -46,6 +50,8 @@ export const DEFAULT_OPTIONS: WardenOptions = {
   advisoryNote: null,
   denyActions: [],
   probeLog: null,
+  outboxPath: null,
+  allowOutboxInLocation: false,
   serverId: null,
   jev: {
     enabled: false,
@@ -65,6 +71,11 @@ export function parseOptions(raw: Readonly<Record<string, unknown>> | undefined)
   const labEndpoint = optionalString(record.labEndpoint, "labEndpoint", errors)
   const advisoryNote = optionalString(record.advisoryNote, "advisoryNote", errors)
   const probeLog = optionalString(record.probeLog, "probeLog", errors)
+  const outboxPath = optionalString(record.outboxPath, "outboxPath", errors)
+  const allowOutboxInLocation = record.allowOutboxInLocation === true
+  if (record.allowOutboxInLocation !== undefined && typeof record.allowOutboxInLocation !== "boolean") {
+    errors.push("allowOutboxInLocation must be a boolean")
+  }
   const serverId = optionalString(record.serverId, "serverId", errors)
 
   const denyActions: string[] = []
@@ -102,6 +113,8 @@ export function parseOptions(raw: Readonly<Record<string, unknown>> | undefined)
     advisoryNote,
     denyActions,
     probeLog,
+    outboxPath,
+    allowOutboxInLocation,
     serverId,
     jev,
   }

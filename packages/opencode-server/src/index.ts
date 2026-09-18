@@ -8,12 +8,15 @@
  */
 import { Plugin } from "@opencode/plugin/effect"
 import { Effect, Schedule, Stream } from "effect"
+import { appendFileSync, mkdirSync } from "node:fs"
+import { dirname } from "node:path"
 import { WardenRpc } from "@jev-warden/contracts"
 import { assertStatusSafe, correlationDigest } from "@jev-warden/core"
 import { createLiveJev, macOsKeychainReader } from "./jev-live.ts"
 import { parseOptions } from "./options.ts"
 import { registerHooks, probe } from "./hooks.ts"
 import { requestReview, ReviewLedger, type ReviewInput } from "./review.ts"
+import { resolveOutboxPath } from "./outbox.ts"
 import { PLUGIN_ID, PLUGIN_VERSION, SPOOL_LIMIT, STORAGE_KEY, WardenRuntime } from "./runtime.ts"
 
 function toJsonValue(value: unknown): unknown {
@@ -53,9 +56,33 @@ const plugin = Plugin.define({
         epoch: runtime.serverEpoch,
       })
 
+      // Outbox path resolution: relative paths belong to the location, not to
+      // whatever working directory the server process happens to have. Writing
+      // inside the location can feed the config watcher and cause reload loops,
+      // so it is refused unless the operator explicitly opts in.
+      const locationDirectory = ctx.location?.directory ?? "unknown-location"
+      const resolvedOutbox = resolveOutboxPath(
+        locationDirectory,
+        parsed.options.outboxPath,
+        parsed.options.allowOutboxInLocation,
+      )
+      const outboxPath = resolvedOutbox.path
+      let lastOutboxSequence = 0
+      if (resolvedOutbox.skippedInsideLocation) {
+        runtime.setFlag("durabilityDegraded", true)
+        probe(runtime, { event: "outbox.skipped_inside_location", path: resolvedOutbox.requested })
+      }
+      if (outboxPath !== null) {
+        try {
+          mkdirSync(dirname(outboxPath), { recursive: true })
+        } catch {
+          runtime.markDurabilityDegraded()
+        }
+        probe(runtime, { event: "outbox.configured", path: outboxPath })
+      }
+
       const flushSpool = (): Effect.Effect<void> =>
-        Effect.gen(function* () {
-          const snapshot = runtime.spoolSnapshot.slice(-SPOOL_LIMIT)
+        Effect.gen(function* () {          const snapshot = runtime.spoolSnapshot.slice(-SPOOL_LIMIT)
           if (snapshot.length === 0) return
           yield* ctx.storage
             .set(STORAGE_KEY, {
@@ -72,6 +99,21 @@ const plugin = Plugin.define({
               ),
             )
           runtime.setCounter("spooledEvents", snapshot.length)
+          // Durable outbox for the Lab. At-least-once: on restart the spool is
+          // re-sent from the beginning and the Lab dedups by envelope id.
+          if (outboxPath !== null) {
+            const fresh = snapshot.filter((envelope) => envelope.sequence > lastOutboxSequence)
+            if (fresh.length > 0) {
+              try {
+                appendFileSync(outboxPath, fresh.map((envelope) => JSON.stringify(envelope)).join("\n") + "\n")
+                const last = fresh[fresh.length - 1]
+                if (last !== undefined) lastOutboxSequence = last.sequence
+              } catch {
+                runtime.markDurabilityDegraded()
+                probe(runtime, { event: "outbox.append_failed" })
+              }
+            }
+          }
         })
 
       // Restore the previous spool count (not the content) so status is honest
